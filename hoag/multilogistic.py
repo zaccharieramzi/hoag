@@ -11,13 +11,15 @@ class MultiLogisticRegressionCV(linear_model._base.BaseEstimator,
                            linear_model._base.LinearClassifierMixin):
 
     def __init__(self, alpha0=None, tol=0.1, callback=None, verbose=0,
-                 tolerance_decrease='exponential', max_iter=10):
+                 tolerance_decrease='exponential', max_iter=10, shine=False, **lbfgs_kwargs):
         self.alpha0 = alpha0
         self.tol = tol
         self.callback = callback
         self.verbose = verbose
         self.tolerance_decrease = tolerance_decrease
         self.max_iter = max_iter
+        self.shine = shine
+        self.lbfgs_kwargs = lbfgs_kwargs
 
     def fit(self, Xt, yt, Xh, yh, callback=None):
         lbin = LabelBinarizer()
@@ -72,7 +74,7 @@ class MultiLogisticRegressionCV(linear_model._base.BaseEstimator,
             callback=callback,
             tolerance_decrease=self.tolerance_decrease,
             lambda0=self.alpha0, maxiter=self.max_iter,
-            verbose=self.verbose)
+            verbose=self.verbose, shine=self.shine, **self.lbfgs_kwargs)
 
         self.coef_ = opt[0]
         self.alpha_ = opt[1]
