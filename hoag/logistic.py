@@ -10,13 +10,14 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
 
     def __init__(
                  self, alpha0=0., tol=0.1, callback=None, verbose=0,
-                 tolerance_decrease='exponential', max_iter=50):
+                 tolerance_decrease='exponential', max_iter=50, shine=False):
         self.alpha0 = alpha0
         self.tol = tol
         self.callback = callback
         self.verbose = verbose
         self.tolerance_decrease = tolerance_decrease
         self.max_iter = max_iter
+        self.shine = shine
 
     def fit(self, Xt, yt, Xh, yh, callback=None):
         if not np.all(np.unique(yt) == np.array([-1, 1])):
@@ -43,7 +44,7 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
             callback=callback,
             tolerance_decrease=self.tolerance_decrease,
             lambda0=np.array([self.alpha0]), maxiter=self.max_iter,
-            verbose=self.verbose)
+            verbose=self.verbose, shine=self.shine,)
 
         # opt = _minimize_lbfgsb(
         #     h_func_grad, DE_DX, H, x0, callback=callback,
