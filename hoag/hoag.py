@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import array, asarray, float64, int32, zeros
 from scipy import linalg
-from scipy.optimize.lbfgsb import _lbfgsb
+from scipy.optimize.lbfgsb import _lbfgsb, LbfgsInvHessProduct
 from scipy.sparse import linalg as splinalg
 
 
@@ -12,7 +12,7 @@ def hoag_lbfgs(
     only_fit=False,
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
-    projection=None):
+    projection=None, shine=False,):
     """
     HOAG algorithm using L-BFGS-B in the inner optimization algorithm.
 
@@ -144,20 +144,36 @@ def hoag_lbfgs(
             h_func, h_grad = h_func_grad(x, lambdak)
             print('inner level iterations: %s, inner objective %s, grad norm %s' % (n_iterations, h_func, linalg.norm(h_grad)))
 
-        fhs = h_hessian(x, lambdak)
-        B_op = splinalg.LinearOperator(
-            shape=(x.size, x.size),
-            matvec=lambda z: fhs(z))
-
         g_func, g_grad = g_func_grad(x, lambdak)
-        if Bxk is None:
-            Bxk = x.copy()
-        tol_CG = epsilon_tol
-        if verbose > 1:
-            print('Inverting matrix with precision %s' % tol_CG)
-        Bxk, success = splinalg.cg(B_op, g_grad, x0=Bxk, tol=tol_CG, maxiter=maxiter_inner)
-        if success != 0:
-            print('CG did not converge to the desired precision')
+        if shine:
+            # taken from scipy
+            # https://github.com/scipy/scipy/blob/master/scipy/optimize/lbfgsb.py#L385-L393
+            # These two portions of the workspace are described in the mainlb
+            # subroutine in lbfgsb.f. See line 363.
+            s = wa[0: m*n].reshape(m, n)
+            y = wa[m*n: 2*m*n].reshape(m, n)
+
+            # See lbfgsb.f line 160 for this portion of the workspace.
+            # isave(31) = the total number of BFGS updates prior the current iteration;
+            n_bfgs_updates = isave[30]
+
+            n_corrs = min(n_bfgs_updates, maxcor)
+            hess_inv = LbfgsInvHessProduct(s[:n_corrs], y[:n_corrs])
+            Bxk = hess_inv(g_grad)
+        else:
+            fhs = h_hessian(x, lambdak)
+            B_op = splinalg.LinearOperator(
+                shape=(x.size, x.size),
+                matvec=lambda z: fhs(z))
+
+            if Bxk is None:
+                Bxk = x.copy()
+            tol_CG = epsilon_tol
+            if verbose > 1:
+                print('Inverting matrix with precision %s' % tol_CG)
+            Bxk, success = splinalg.cg(B_op, g_grad, x0=Bxk, tol=tol_CG, maxiter=maxiter_inner)
+            if success != 0:
+                print('CG did not converge to the desired precision')
         old_epsilon_tol = epsilon_tol
         if tolerance_decrease == 'quadratic':
             epsilon_tol = epsilon_tol_init / (it ** 2)
