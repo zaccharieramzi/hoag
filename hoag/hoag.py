@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 from numpy import array, asarray, float64, int32, zeros
 from scipy import linalg
@@ -103,6 +105,7 @@ def hoag_lbfgs(
         n_iterations = 0
         task[:] = 'START'
         old_x = x.copy()
+        start = time.time()
         while 1:
             pgtol_lbfgs = 1e-120
             factr = 1e-120  # / np.finfo(float).eps
@@ -136,7 +139,9 @@ def hoag_lbfgs(
                 break
         else:
             pass
-
+        end = time.time()
+        if verbose > 0:
+            print(f'Forward took {end-start} seconds')
         if only_fit:
             break
 
@@ -145,6 +150,7 @@ def hoag_lbfgs(
             print('inner level iterations: %s, inner objective %s, grad norm %s' % (n_iterations, h_func, linalg.norm(h_grad)))
 
         g_func, g_grad = g_func_grad(x, lambdak)
+        start = time.time()
         if shine:
             # taken from scipy
             # https://github.com/scipy/scipy/blob/master/scipy/optimize/lbfgsb.py#L385-L393
@@ -174,6 +180,9 @@ def hoag_lbfgs(
             Bxk, success = splinalg.cg(B_op, g_grad, x0=Bxk, tol=tol_CG, maxiter=maxiter_inner)
             if success != 0:
                 print('CG did not converge to the desired precision')
+        end = time.time()
+        if verbose > 0:
+            print(f'Backward took {end-start} seconds')
         old_epsilon_tol = epsilon_tol
         if tolerance_decrease == 'quadratic':
             epsilon_tol = epsilon_tol_init / (it ** 2)
