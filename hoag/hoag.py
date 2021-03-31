@@ -10,7 +10,7 @@ from scipy.sparse import linalg as splinalg
 def hoag_lbfgs(
     h_func_grad, h_hessian, h_crossed, g_func_grad, x0, bounds=None,
     lambda0=0., disp=None, maxcor=10,
-    maxiter=100, maxiter_inner=10000,
+    maxiter=100, maxiter_inner=10000, maxiter_backward=10000,
     only_fit=False,
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
@@ -177,7 +177,7 @@ def hoag_lbfgs(
             tol_CG = epsilon_tol
             if verbose > 1:
                 print('Inverting matrix with precision %s' % tol_CG)
-            Bxk, success = splinalg.cg(B_op, g_grad, x0=Bxk, tol=tol_CG, maxiter=maxiter_inner)
+            Bxk, success = splinalg.cg(B_op, g_grad, x0=Bxk, tol=tol_CG, maxiter=maxiter_backward)
             if success != 0:
                 print('CG did not converge to the desired precision')
         end = time.time()
