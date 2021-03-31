@@ -12,7 +12,7 @@ def hoag_lbfgs(
     only_fit=False,
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
-    projection=None, shine=False,):
+    projection=None, shine=False, debug=False,):
     """
     HOAG algorithm using L-BFGS-B in the inner optimization algorithm.
 
