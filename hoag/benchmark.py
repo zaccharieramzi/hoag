@@ -86,7 +86,7 @@ def results_for_kwargs(dataset='20news', random_state=0, **kwargs):
         beta_traces.append(x.copy())
     # optimize model parameters and hyperparameters jointly
     # using HOAG
-    clf = LogisticRegressionCV(verbose=0, **kwargs)
+    clf = LogisticRegressionCV(**kwargs)
     clf.fit(X_train, y_train, X_test, y_test, callback=lambda_tracing)
     val_losses = [val_loss(X_val, y_val, beta) for beta in beta_traces]
     test_losses = [val_loss(X_test, y_test, beta) for beta in beta_traces]
