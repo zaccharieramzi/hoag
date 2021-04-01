@@ -26,7 +26,7 @@ class BenchResult:
 
     def append(self, bench_res):
         for f in fields(self):
-            self[f.name] += (bench_res[f.name])
+            self[f.name] += [bench_res[f.name]]
 
     def freeze(self):
         for f in fields(self):
@@ -34,14 +34,14 @@ class BenchResult:
 
     def median(self):
         return BenchResult(
-            np.median(self[f.name], axis=0)
-            for f in fields(self)
+            *tuple(np.median(self[f.name], axis=0)
+            for f in fields(self))
         )
 
     def quantile(self, q):
         return BenchResult(
-            np.quantile(self[f.name], q, axis=0)
-            for f in fields(self)
+            *tuple(np.quantile(self[f.name], q, axis=0)
+            for f in fields(self))
         )
 
 
@@ -109,6 +109,7 @@ def randomized_results_for_kwargs(n_random_seed=10, **kwargs):
 
 def quantized_results_for_kwargs(**kwargs):
     overall_res = randomized_results_for_kwargs(**kwargs)
+    overall_res.freeze()
     median_res = overall_res.median()
     q1_res = overall_res.quantile(0.1)
     q9_res = overall_res.quantile(0.9)
