@@ -14,7 +14,7 @@ def hoag_lbfgs(
     only_fit=False,
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
-    projection=None, shine=False, debug=False,):
+    projection=None, shine=False, debug=False, refine=False,):
     """
     HOAG algorithm using L-BFGS-B in the inner optimization algorithm.
 
@@ -166,20 +166,31 @@ def hoag_lbfgs(
             n_corrs = min(n_bfgs_updates, maxcor)
             hess_inv = LbfgsInvHessProduct(s[:n_corrs], y[:n_corrs])
             Bxk = hess_inv(g_grad)
-        else:
-            fhs = h_hessian(x, lambdak)
-            B_op = splinalg.LinearOperator(
-                shape=(x.size, x.size),
-                matvec=lambda z: fhs(z))
-
-            if Bxk is None:
-                Bxk = x.copy()
+        if not shine or refine:
             tol_CG = epsilon_tol
-            if verbose > 1:
-                print('Inverting matrix with precision %s' % tol_CG)
-            Bxk, success = splinalg.cg(B_op, g_grad, x0=Bxk, tol=tol_CG, maxiter=maxiter_backward)
-            if success != 0:
-                print('CG did not converge to the desired precision')
+            if refine:
+                maxiter_backward = max(int(1/(100*tol_CG**0.5)), maxiter_backward)
+                if verbose > 1:
+                    print(f'Using {maxiter_backward} iterations as a max for backward')
+            if maxiter_backward:
+                fhs = h_hessian(x, lambdak)
+                B_op = splinalg.LinearOperator(
+                    shape=(x.size, x.size),
+                    matvec=lambda z: fhs(z))
+
+                if Bxk is None:
+                    Bxk = x.copy()
+                if verbose > 1:
+                    print('Inverting matrix with precision %s' % tol_CG)
+                Bxk, success = splinalg.cg(
+                    B_op,
+                    g_grad,
+                    x0=Bxk,
+                    tol=tol_CG,
+                    maxiter=maxiter_backward,
+                )
+                if success != 0:
+                    print('CG did not converge to the desired precision')
         end = time.time()
         if verbose > 0:
             print(f'Backward took {end-start} seconds')
