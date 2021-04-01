@@ -1,4 +1,4 @@
-from collections import namedtuple
+from dataclasses import dataclass, fields
 import time
 
 import numpy as np
@@ -9,8 +9,33 @@ from hoag import LogisticRegressionCV
 from hoag.logistic import _intercept_dot, log_logistic
 
 
-bench_res_fields = 'lambda_traces, lamda_times, beta_traces, val_losses, test_losses'.split(', ')
-BenchResult = namedtuple('BenchResult', bench_res_fields, defaults=[[]]*len(bench_res_fields))
+@dataclass
+class BenchResult:
+    lambda_traces = []
+    lamda_times = []
+    beta_traces = []
+    val_losses = []
+    test_losses = []
+
+    def append(self, bench_res):
+        for field in fields(self):
+            self[field.name] += (bench_res[field.name])
+
+    def freeze(self):
+        for field in fields(self):
+            self[field.name] = np.array(self[field.name])
+
+    def median(self):
+        return BenchResult(
+            np.median(self[field.name], axis=0)
+            for field in fields(self)
+        )
+
+    def quantile(self, q):
+        return BenchResult(
+            np.quantile(self[field.name], q, axis=0)
+            for field in fields(self)
+        )
 
 
 def get_20_news(random_state=0):
@@ -69,5 +94,15 @@ def results_for_kwargs(dataset='20news', random_state=0, **kwargs):
     return res
 
 def randomized_results_for_kwargs(n_random_seed=10, **kwargs):
+    overall_res = BenchResult()
     for seed in range(n_random_seed):
         res = results_for_kwargs(random_state=seed, **kwargs)
+        overall_res.append(res)
+    return overall_res
+
+def quantized_results_for_kwargs(**kwargs):
+    overall_res = randomized_results_for_kwargs(**kwargs)
+    median_res = overall_res.median()
+    q1_res = overall_res.quantile(0.1)
+    q9_res = overall_res.quantile(0.9)
+    return median_res, q1_res, q9_res
