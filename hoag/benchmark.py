@@ -1,5 +1,6 @@
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, field
 import time
+from typing import List
 
 import numpy as np
 from sklearn import datasets
@@ -11,30 +12,36 @@ from hoag.logistic import _intercept_dot, log_logistic
 
 @dataclass
 class BenchResult:
-    lambda_traces = []
-    lamda_times = []
-    beta_traces = []
-    val_losses = []
-    test_losses = []
+    lambda_traces: List = field(default_factory=list)
+    lamda_times: List = field(default_factory=list)
+    beta_traces: List = field(default_factory=list)
+    val_losses: List = field(default_factory=list)
+    test_losses: List = field(default_factory=list)
+
+    def __getitem__(self, field_key):
+        return self.__getattribute__(field_key)
+
+    def __setitem__(self, field_key, value):
+        return self.__setattr__(field_key, value)
 
     def append(self, bench_res):
-        for field in fields(self):
-            self[field.name] += (bench_res[field.name])
+        for f in fields(self):
+            self[f.name] += (bench_res[f.name])
 
     def freeze(self):
-        for field in fields(self):
-            self[field.name] = np.array(self[field.name])
+        for f in fields(self):
+            self[f.name] = np.array(self[f.name])
 
     def median(self):
         return BenchResult(
-            np.median(self[field.name], axis=0)
-            for field in fields(self)
+            np.median(self[f.name], axis=0)
+            for f in fields(self)
         )
 
     def quantile(self, q):
         return BenchResult(
-            np.quantile(self[field.name], q, axis=0)
-            for field in fields(self)
+            np.quantile(self[f.name], q, axis=0)
+            for f in fields(self)
         )
 
 
