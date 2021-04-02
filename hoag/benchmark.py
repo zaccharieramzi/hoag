@@ -4,6 +4,7 @@ from typing import List
 
 from libsvmdata import fetch_libsvm
 import numpy as np
+import scipy.sparse as sp
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
 
@@ -78,9 +79,8 @@ def get_20_news(random_state=0):
     y_test[data_test.target >= 10] = 1
 
     # Regroup all
-    X = np.vstack([X_train, X_test])
-    y = np.vstack(y_train, y_test)
-
+    X = sp.vstack([X_train, X_test])
+    y = np.hstack([y_train, y_test])
     # Equally-sized split
     X_train, y_train, X_test, y_test, X_val, y_val = train_test_val_split(
         X,
