@@ -52,9 +52,9 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
             yh,
         )
         if random:
-            grid = np.linspace(-12, 12, 10)
+            grid = np.linspace(-12, 12, self.max_iter)
         else:
-            grid = np.random.randint(-12, 12, 10)
+            grid = np.random.randint(-12, 12, self.max_iter)
         self.coef_ = self.alpha_ = None
         min_loss = np.inf
         for l in grid:
