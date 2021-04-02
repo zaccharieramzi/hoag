@@ -59,8 +59,12 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
         for cur_alpha in grid:
             if self.coef_ is None:
                 x0 = np.random.randn(Xt.shape[1])
+                self.coef_ = x0
+                self.alpha_ = cur_alpha
             else:
                 x0 = cur_coef
+            if callback is not None:
+                callback(self.coef_, [self.alpha_])
             opt = hoag_lbfgs(
                 h_func_grad, h_hessian, h_crossed, g_func_grad, x0,
                 callback=None,
@@ -74,8 +78,8 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
                 min_loss = cur_loss
                 self.coef_ = cur_coef
                 self.alpha_ = cur_alpha
-            if callback is not None:
-                callback(self.coef_, [self.alpha_])
+        if callback is not None:
+            callback(self.coef_, [self.alpha_])
         return self
 
     def fit(self, Xt, yt, Xh, yh, callback=None):
