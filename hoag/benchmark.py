@@ -75,7 +75,7 @@ def val_loss(X, y, beta):
     out = -np.sum(log_logistic(yz))
     return out
 
-def results_for_kwargs(dataset='20news', random_state=0, **kwargs):
+def results_for_kwargs(dataset='20news', random_state=0, search=None, **kwargs):
     if dataset == '20news':
         X_train, y_train, X_test, y_test, X_val, y_val = get_20_news(random_state)
     else:
@@ -94,7 +94,18 @@ def results_for_kwargs(dataset='20news', random_state=0, **kwargs):
     # optimize model parameters and hyperparameters jointly
     # using HOAG
     clf = LogisticRegressionCV(**kwargs)
-    clf.fit(X_train, y_train, X_test, y_test, callback=lambda_tracing)
+    if search is None:
+        clf.fit(X_train, y_train, X_test, y_test, callback=lambda_tracing)
+    else:
+        random = search == 'random'
+        clf.grid_search(
+            X_train,
+            y_train,
+            X_test,
+            y_test,
+            callback=lambda_tracing,
+            random=random,
+        )
     val_losses = [val_loss(X_val, y_val, beta) for beta in beta_traces]
     test_losses = [val_loss(X_test, y_test, beta) for beta in beta_traces]
     res = BenchResult(lambda_traces, lambda_times, beta_traces, val_losses, test_losses)
