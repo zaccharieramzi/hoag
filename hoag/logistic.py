@@ -75,7 +75,7 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
                 self.coef_ = cur_coef
                 self.alpha_ = cur_alpha
             if callback is not None:
-                callback(self.coef_, self.alpha_)
+                callback(self.coef_, [self.alpha_])
         return self
 
     def fit(self, Xt, yt, Xh, yh, callback=None):
