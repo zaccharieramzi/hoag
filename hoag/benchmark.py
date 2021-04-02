@@ -2,6 +2,7 @@ from dataclasses import dataclass, fields, field
 import time
 from typing import List
 
+from libsvmdata import fetch_libsvm
 import numpy as np
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
@@ -45,6 +46,21 @@ class BenchResult:
         )
 
 
+def train_test_val_split(X, y, random_state=0):
+    X_train, y_train, X_test, y_test = train_test_split(
+        X,
+        y,
+        test_size=2/3,
+        random_state=random_state,
+    )
+    X_val, y_val, X_test, y_test = train_test_split(
+        X_test,
+        y_test,
+        test_size=1/2,
+        random_state=random_state,
+    )
+    return X_train, y_train, X_test, y_test, X_val, y_val
+
 def get_20_news(random_state=0):
     # get a training set and test set
     data_train = datasets.fetch_20newsgroups_vectorized(subset='train')
@@ -61,11 +77,23 @@ def get_20_news(random_state=0):
     y_test[data_test.target < 10] = -1
     y_test[data_test.target >= 10] = 1
 
-    # create validation set
-    X_test, X_val, y_test, y_val = train_test_split(
-        X_test,
-        y_test,
-        test_size=0.5,
+    # Regroup all
+    X = np.vstack([X_train, X_test])
+    y = np.vstack(y_train, y_test)
+
+    # Equally-sized split
+    X_train, y_train, X_test, y_test, X_val, y_val = train_test_val_split(
+        X,
+        y,
+        random_state=random_state,
+    )
+    return X_train, y_train, X_test, y_test, X_val, y_val
+
+def get_realsim(random_state):
+    X, y = fetch_libsvm("real-sim")
+    X_train, y_train, X_test, y_test, X_val, y_val = train_test_val_split(
+        X,
+        y,
         random_state=random_state,
     )
     return X_train, y_train, X_test, y_test, X_val, y_val
@@ -77,10 +105,12 @@ def val_loss(X, y, beta):
 
 def results_for_kwargs(dataset='20news', random_state=0, search=None, **kwargs):
     if dataset == '20news':
-        X_train, y_train, X_test, y_test, X_val, y_val = get_20_news(random_state)
+        get_fun = get_20_news
+    elif dataset == 'real-sim':
+        get_fun = get_realsim
     else:
         raise NotImplementedError(f'Dataset {dataset} not implemented')
-
+    X_train, y_train, X_test, y_test, X_val, y_val = get_fun(random_state)
     np.random.seed(random_state)
     lambda_traces = []
     lambda_times = []
