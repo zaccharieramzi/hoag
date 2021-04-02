@@ -4,6 +4,29 @@ from sklearn import linear_model
 from scipy.special import expit
 from sklearn.utils.extmath import log_logistic, safe_sparse_dot
 
+from hoag.hoag import hoag_lbfgs
+
+
+def _create_bilevel_functions(Xt, yt, Xh, yh):
+    if not np.all(np.unique(yt) == np.array([-1, 1])):
+        raise ValueError
+
+
+    def h_func_grad(x, alpha):
+        return _logistic_loss_and_grad(
+            x, Xt, yt, np.exp(alpha[0]))
+
+    def h_hessian(x, alpha):
+        return _logistic_grad_hess(
+            x, Xt, yt, np.exp(alpha[0]))[1]
+
+    def g_func_grad(x, alpha):
+        return _logistic_loss_and_grad(x, Xh, yh, 0)
+
+    def h_crossed(x, alpha):
+        return np.exp(alpha[0]) * x
+
+    return h_func_grad, h_hessian, g_func_grad, h_crossed
 
 class LogisticRegressionCV(linear_model._base.BaseEstimator,
                            linear_model._base.LinearClassifierMixin):
@@ -20,26 +43,44 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
         self.shine = shine
         self.lbfgs_kwargs = lbfgs_kwargs
 
-    def fit(self, Xt, yt, Xh, yh, callback=None):
-        if not np.all(np.unique(yt) == np.array([-1, 1])):
-            raise ValueError
+    def grid_search(self, Xt, yt, Xh, yh, callback=None):
         x0 = np.random.randn(Xt.shape[1])
+        h_func_grad, h_hessian, g_func_grad, h_crossed = _create_bilevel_functions(
+            Xt,
+            yt,
+            Xh,
+            yh,
+        )
+        grid = np.linspace(-12, 12, 10)
+        self.coef_ = self.alpha_ = None
+        min_loss = np.inf
+        for l in grid:
+            opt = hoag_lbfgs(
+                h_func_grad, h_hessian, h_crossed, g_func_grad, x0,
+                callback=None,
+                tolerance_decrease=self.tolerance_decrease,
+                lambda0=np.array([l]), maxiter=self.max_iter,
+                only_fit=True,
+                verbose=self.verbose, shine=False, **self.lbfgs_kwargs)
+            cur_coef = opt[0]
+            cur_alpha = opt[1]
+            cur_loss = _logistic_loss(cur_coef, Xh, yh, 0)
+            if cur_loss < min_loss:
+                min_loss = cur_loss
+                self.coef_ = cur_coef
+                self.alpha_ = cur_alpha
+            if callback is not None:
+                callback(self.coef_, self.alpha_)
+        return self
 
-        def h_func_grad(x, alpha):
-            return _logistic_loss_and_grad(
-                x, Xt, yt, np.exp(alpha[0]))
-
-        def h_hessian(x, alpha):
-            return _logistic_grad_hess(
-                x, Xt, yt, np.exp(alpha[0]))[1]
-
-        def g_func_grad(x, alpha):
-            return _logistic_loss_and_grad(x, Xh, yh, 0)
-
-        def h_crossed(x, alpha):
-            return np.exp(alpha[0]) * x
-
-        from hoag import hoag_lbfgs
+    def fit(self, Xt, yt, Xh, yh, callback=None):
+        x0 = np.random.randn(Xt.shape[1])
+        h_func_grad, h_hessian, g_func_grad, h_crossed = _create_bilevel_functions(
+            Xt,
+            yt,
+            Xh,
+            yh,
+        )
         opt = hoag_lbfgs(
             h_func_grad, h_hessian, h_crossed, g_func_grad, x0,
             callback=callback,
