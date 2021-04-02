@@ -43,7 +43,7 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
         self.shine = shine
         self.lbfgs_kwargs = lbfgs_kwargs
 
-    def grid_search(self, Xt, yt, Xh, yh, callback=None):
+    def grid_search(self, Xt, yt, Xh, yh, callback=None, random=False):
         x0 = np.random.randn(Xt.shape[1])
         h_func_grad, h_hessian, g_func_grad, h_crossed = _create_bilevel_functions(
             Xt,
@@ -51,7 +51,10 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
             Xh,
             yh,
         )
-        grid = np.linspace(-12, 12, 10)
+        if random:
+            grid = np.linspace(-12, 12, 10)
+        else:
+            grid = np.random.randint(-12, 12, 10)
         self.coef_ = self.alpha_ = None
         min_loss = np.inf
         for l in grid:
