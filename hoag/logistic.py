@@ -56,7 +56,7 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
             grid = np.random.randint(-12, 12, self.max_iter)
         self.coef_ = self.alpha_ = None
         min_loss = np.inf
-        for l in grid:
+        for cur_alpha in grid:
             if self.coef_ is None:
                 x0 = np.random.randn(Xt.shape[1])
             else:
@@ -65,11 +65,10 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
                 h_func_grad, h_hessian, h_crossed, g_func_grad, x0,
                 callback=None,
                 tolerance_decrease=self.tolerance_decrease,
-                lambda0=np.array([l]), maxiter=self.max_iter,
+                lambda0=np.array([cur_alpha]), maxiter=2,
                 only_fit=True,
                 verbose=self.verbose, shine=False, **self.lbfgs_kwargs)
             cur_coef = opt[0]
-            cur_alpha = opt[1]
             cur_loss = _logistic_loss(cur_coef, Xh, yh, 0)
             if cur_loss < min_loss:
                 min_loss = cur_loss
