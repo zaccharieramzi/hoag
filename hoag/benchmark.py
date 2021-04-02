@@ -48,13 +48,13 @@ class BenchResult:
 
 
 def train_test_val_split(X, y, random_state=0):
-    X_train, y_train, X_test, y_test = train_test_split(
+    X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
         test_size=2/3,
         random_state=random_state,
     )
-    X_val, y_val, X_test, y_test = train_test_split(
+    X_val, X_test, y_val, y_test = train_test_split(
         X_test,
         y_test,
         test_size=1/2,
