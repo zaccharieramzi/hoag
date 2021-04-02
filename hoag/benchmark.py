@@ -47,11 +47,11 @@ class BenchResult:
         )
 
 
-def train_test_val_split(X, y, random_state=0):
+def train_test_val_split(X, y, random_state=0, train_prop=1/3):
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
-        test_size=2/3,
+        test_size=1-train_prop,
         random_state=random_state,
     )
     X_val, X_test, y_val, y_test = train_test_split(
@@ -62,7 +62,7 @@ def train_test_val_split(X, y, random_state=0):
     )
     return X_train, y_train, X_test, y_test, X_val, y_val
 
-def get_20_news(random_state=0):
+def get_20_news(random_state=0, train_prop=1/3):
     # get a training set and test set
     data_train = datasets.fetch_20newsgroups_vectorized(subset='train')
     data_test = datasets.fetch_20newsgroups_vectorized(subset='test')
@@ -86,15 +86,17 @@ def get_20_news(random_state=0):
         X,
         y,
         random_state=random_state,
+        train_prop=train_prop,
     )
     return X_train, y_train, X_test, y_test, X_val, y_val
 
-def get_realsim(random_state):
+def get_realsim(random_state, train_prop=1/3):
     X, y = fetch_libsvm("real-sim")
     X_train, y_train, X_test, y_test, X_val, y_val = train_test_val_split(
         X,
         y,
         random_state=random_state,
+        train_prop=train_prop,
     )
     return X_train, y_train, X_test, y_test, X_val, y_val
 
@@ -103,14 +105,14 @@ def val_loss(X, y, beta):
     out = -np.sum(log_logistic(yz))
     return out
 
-def results_for_kwargs(dataset='20news', random_state=0, search=None, **kwargs):
+def results_for_kwargs(train_prop=1/3, dataset='20news', random_state=0, search=None, **kwargs):
     if dataset == '20news':
         get_fun = get_20_news
     elif dataset == 'real-sim':
         get_fun = get_realsim
     else:
         raise NotImplementedError(f'Dataset {dataset} not implemented')
-    X_train, y_train, X_test, y_test, X_val, y_val = get_fun(random_state)
+    X_train, y_train, X_test, y_test, X_val, y_val = get_fun(random_state, train_prop=train_prop)
     np.random.seed(random_state)
     lambda_traces = []
     lambda_times = []
