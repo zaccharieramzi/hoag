@@ -39,7 +39,7 @@ class MultiLogisticRegressionCV(linear_model._base.BaseEstimator,
         n_features = Xt.shape[1]
 
         if self.alpha0 is None:
-            self.alpha0 = np.zeros(n_classes * n_features)  # if not np.all(np.unique(yt) == np.array([-1, 1])):
+            self.alpha0 = np.zeros(n_classes)  # if not np.all(np.unique(yt) == np.array([-1, 1])):
         #     raise ValueError
         x0 = np.zeros(n_features * n_classes)
 
@@ -209,7 +209,7 @@ def _multinomial_loss(w, X, Y, alpha, sample_weight):
     n_features = X.shape[1]
     fit_intercept = w.size == (n_classes * (n_features + 1))
     w = w.reshape(n_classes, -1)
-    alpha = alpha.reshape(n_classes, -1)
+    alpha = np.tile(alpha[:, None], n_features)
     sample_weight = sample_weight[:, np.newaxis]
     if fit_intercept:
         intercept = w[:, -1]
@@ -267,12 +267,11 @@ def _multinomial_loss_grad(w, X, Y, alpha, sample_weight):
     n_features = X.shape[1]
     fit_intercept = (w.size == n_classes * (n_features + 1))
     grad = np.zeros((n_classes, n_features + bool(fit_intercept)))
-    alpha = alpha.reshape(n_classes, -1)
     loss, p, w = _multinomial_loss(w, X, Y, alpha, sample_weight)
     sample_weight = sample_weight[:, np.newaxis]
     diff = sample_weight * (p - Y)
     grad[:, :n_features] = safe_sparse_dot(diff.T, X)
-    grad[:, :n_features] += alpha * w
+    grad[:, :n_features] += np.tile(alpha[:, None], n_features) * w
     if fit_intercept:
         grad[:, -1] = diff.sum(axis=0)
     return loss, grad.ravel(), p
@@ -324,7 +323,6 @@ def _multinomial_grad_hess(w, X, Y, alpha, sample_weight):
     # significantly speed up the computation and decreases readability
     loss, grad, p = _multinomial_loss_grad(w, X, Y, alpha, sample_weight)
     sample_weight = sample_weight[:, np.newaxis]
-    alpha = alpha.reshape(n_classes, -1)
 
 
     # Hessian-vector product derived by applying the R-operator on the gradient
@@ -345,7 +343,7 @@ def _multinomial_grad_hess(w, X, Y, alpha, sample_weight):
         r_yhat *= sample_weight
         hessProd = np.zeros((n_classes, n_features + bool(fit_intercept)))
         hessProd[:, :n_features] = safe_sparse_dot(r_yhat.T, X)
-        hessProd[:, :n_features] += v * alpha
+        hessProd[:, :n_features] += v * np.tile(alpha[:, None], n_features)
         if fit_intercept:
             raise ValueError
             hessProd[:, -1] = r_yhat.sum(axis=0)
