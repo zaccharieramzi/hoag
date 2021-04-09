@@ -14,7 +14,7 @@ def hoag_lbfgs(
     only_fit=False,
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
-    projection=None, shine=False, debug=False, refine=False,):
+    projection=None, shine=False, debug=False, refine=False, fpn=False):
     """
     HOAG algorithm using L-BFGS-B in the inner optimization algorithm.
 
@@ -166,7 +166,9 @@ def hoag_lbfgs(
             n_corrs = min(n_bfgs_updates, maxcor)
             hess_inv = LbfgsInvHessProduct(s[:n_corrs], y[:n_corrs])
             Bxk = hess_inv(g_grad)
-        if not shine or refine:
+        elif fpn:
+            Bxk = g_grad
+        if not (shine or fpn) or refine:
             tol_CG = epsilon_tol
             if refine:
                 maxiter_backward = max(int(1/(100*tol_CG**0.5)), maxiter_backward)
