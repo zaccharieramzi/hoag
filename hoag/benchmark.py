@@ -8,8 +8,9 @@ import scipy.sparse as sp
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
 
-from hoag import LogisticRegressionCV
+from hoag import LogisticRegressionCV, MultiLogisticRegressionCV
 from hoag.logistic import _intercept_dot, log_logistic
+from hoag.multilogistic import _multinomial_loss
 
 
 @dataclass
@@ -100,9 +101,32 @@ def get_realsim(random_state, train_prop=1/3):
     )
     return X_train, y_train, X_test, y_test, X_val, y_val
 
-def val_loss(X, y, beta):
+def get_mnist(random_state, train_prop=1/3):
+    from keras.datasets import mnist
+    import tensorflow as tf
+
+    (X_train, y_train), (X_test, y_test) = mnist.load_data()
+    X_train = np.reshape(tf.image.resize(X_train[..., None], (12, 12)).numpy()[..., 0], (X_train.shape[0], -1))
+    X_test = np.reshape(tf.image.resize(X_test[..., None], (12, 12)).numpy()[..., 0], (X_test.shape[0], -1))
+    X = np.vstack([X_train, X_test])
+    y = np.vstack([y_train, y_test])
+    X_train, y_train, X_test, y_test, X_val, y_val = train_test_val_split(
+        X,
+        y,
+        random_state=random_state,
+        train_prop=train_prop,
+    )
+    return X_train, y_train, X_test, y_test, X_val, y_val
+
+
+def val_loss_univariate(X, y, beta):
     _, _, yz = _intercept_dot(beta, X, y)
     out = -np.sum(log_logistic(yz))
+    return out
+
+def val_loss_multivariate(X, y, beta):
+    n_samples, n_classes = y.shape
+    out, _, _ = _multinomial_loss(beta, X, y, np.zeros((n_classes,)), np.ones((n_samples,)))
     return out
 
 def results_for_kwargs(train_prop=1/3, dataset='20news', random_state=0, search=None, **kwargs):
@@ -110,6 +134,8 @@ def results_for_kwargs(train_prop=1/3, dataset='20news', random_state=0, search=
         get_fun = get_20_news
     elif dataset == 'real-sim':
         get_fun = get_realsim
+    elif dataset == 'mnist':
+        get_fun = get_mnist
     else:
         raise NotImplementedError(f'Dataset {dataset} not implemented')
     X_train, y_train, X_test, y_test, X_val, y_val = get_fun(random_state, train_prop=train_prop)
@@ -125,7 +151,14 @@ def results_for_kwargs(train_prop=1/3, dataset='20news', random_state=0, search=
         beta_traces.append(x.copy())
     # optimize model parameters and hyperparameters jointly
     # using HOAG
-    clf = LogisticRegressionCV(**kwargs)
+    if dataset != 'mnist':
+        # only 2 classes
+        clf = LogisticRegressionCV(**kwargs)
+        val_loss = val_loss_univariate
+    else:
+        # multiclasses case
+        clf = MultiLogisticRegressionCV(**kwargs)
+        val_loss = val_loss_multivariate
     if search is None:
         clf.fit(X_train, y_train, X_test, y_test, callback=lambda_tracing)
     else:
