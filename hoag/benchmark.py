@@ -116,6 +116,11 @@ def get_mnist(random_state, train_prop=1/3):
         random_state=random_state,
         train_prop=train_prop,
     )
+    #scaling
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+    X_val = scaler.transform(X_val)
     return X_train, y_train, X_test, y_test, X_val, y_val
 
 
