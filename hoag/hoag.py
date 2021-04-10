@@ -14,7 +14,7 @@ def hoag_lbfgs(
     only_fit=False,
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
-    projection=None, shine=False, debug=False, refine=False, fpn=False):
+    projection=None, shine=False, debug=False, refine=False, fpn=False, grouped_reg=False,):
     """
     HOAG algorithm using L-BFGS-B in the inner optimization algorithm.
 
@@ -211,6 +211,9 @@ def hoag_lbfgs(
         epsilon_tol = max(epsilon_tol, exact_epsilon)
         # .. update hyperparameters ..
         grad_lambda = - h_crossed(x, lambdak).dot(Bxk)
+        if grouped_reg:
+            grad_lambda = grad_lambda.reshape((len(lambdak), -1))
+            grad_lambda = np.sum(grad_lambda, axis=-1)
         if linalg.norm(grad_lambda) == 0:
             # increase tolerance
             if verbose > 0:
