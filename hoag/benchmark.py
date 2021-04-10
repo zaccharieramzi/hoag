@@ -7,6 +7,7 @@ import numpy as np
 import scipy.sparse as sp
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 from hoag import LogisticRegressionCV, MultiLogisticRegressionCV
 from hoag.logistic import _intercept_dot, log_logistic
@@ -109,7 +110,7 @@ def get_mnist(random_state, train_prop=1/3):
     X_train = np.reshape(tf.image.resize(X_train[..., None], (12, 12)).numpy()[..., 0], (X_train.shape[0], -1))
     X_test = np.reshape(tf.image.resize(X_test[..., None], (12, 12)).numpy()[..., 0], (X_test.shape[0], -1))
     X = np.vstack([X_train, X_test])
-    y = np.vstack([y_train, y_test])
+    y = np.hstack([y_train, y_test])
     X_train, y_train, X_test, y_test, X_val, y_val = train_test_val_split(
         X,
         y,
