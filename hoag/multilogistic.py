@@ -64,6 +64,7 @@ class MultiLogisticRegressionCV(linear_model._base.BaseEstimator,
         def h_crossed(x, alpha):
             # return x.reshape((n_classes, -1)) * alpha
             # x = x.reshape((-1,Yt_multi.shape[1]))
+            alpha = np.reshape(np.tile(alpha[:, None], n_features), (-1,))
             tmp = np.exp(alpha) * x
             return sparse.dia_matrix(
                 (tmp, 0),
