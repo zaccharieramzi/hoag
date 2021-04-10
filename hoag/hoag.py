@@ -14,7 +14,8 @@ def hoag_lbfgs(
     only_fit=False,
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
-    projection=None, shine=False, debug=False, refine=False, fpn=False, grouped_reg=False,):
+    projection=None, shine=False, debug=False, refine=False, fpn=False, grouped_reg=False,
+    refine_exp=0.5):
     """
     HOAG algorithm using L-BFGS-B in the inner optimization algorithm.
 
@@ -171,7 +172,7 @@ def hoag_lbfgs(
         if not (shine or fpn) or refine:
             tol_CG = epsilon_tol
             if refine:
-                maxiter_backward = max(int(1/(100*tol_CG**0.5)), maxiter_backward)
+                maxiter_backward = max(int(1/(100*tol_CG**refine_exp)), maxiter_backward)
                 if verbose > 1:
                     print(f'Using {maxiter_backward} iterations as a max for backward')
             if maxiter_backward:

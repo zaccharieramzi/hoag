@@ -75,7 +75,7 @@ class MultiLogisticRegressionCV(linear_model._base.BaseEstimator,
             callback=callback,
             tolerance_decrease=self.tolerance_decrease,
             lambda0=self.alpha0, maxiter=self.max_iter,
-            grouped_reg=True,
+            grouped_reg=True, refine_exp=1,
             verbose=self.verbose, shine=self.shine, **self.lbfgs_kwargs)
 
         self.coef_ = opt[0]
