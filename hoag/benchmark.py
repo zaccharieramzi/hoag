@@ -7,7 +7,7 @@ import numpy as np
 import scipy.sparse as sp
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelBinarizer
 
 from hoag import LogisticRegressionCV, MultiLogisticRegressionCV
 from hoag.logistic import _intercept_dot, log_logistic
@@ -177,6 +177,11 @@ def results_for_kwargs(train_prop=1/3, dataset='20news', random_state=0, search=
             callback=lambda_tracing,
             random=random,
         )
+    if dataset == 'mnist':
+        lbin = LabelBinarizer()
+        lbin.fit(y_train)
+        y_val = lbin.transform(y_val)
+        y_test = lbin.transform(y_test)
     val_losses = [val_loss(X_val, y_val, beta) for beta in beta_traces]
     test_losses = [val_loss(X_test, y_test, beta) for beta in beta_traces]
     res = BenchResult(lambda_traces, lambda_times, beta_traces, val_losses, test_losses)
