@@ -1,6 +1,7 @@
 import numpy as np
 from scipy import optimize
-
+from scipy.sparse import eye
+from sklearn.utils.extmath import safe_sparse_dot
 
 def two_loops(grad_x, m, s_list, y_list, mu_list, B0):
     '''
@@ -32,12 +33,12 @@ def two_loops(grad_x, m, s_list, y_list, mu_list, B0):
     q = grad_x.copy()
     alpha_list = []
     for s, y, mu in zip(reversed(s_list), reversed(y_list), reversed(mu_list)):
-        alpha = mu * np.dot(s, q)
+        alpha = mu * safe_sparse_dot(s, q)
         alpha_list.append(alpha)
         q -= alpha * y
-    r = np.dot(B0, q)
+    r = safe_sparse_dot(B0, q)
     for s, y, mu, alpha in zip(s_list, y_list, mu_list, reversed(alpha_list)):
-        beta = mu * np.dot(y, r)
+        beta = mu * safe_sparse_dot(y, r)
         r += (alpha - beta) * s
     return -r
 
@@ -69,7 +70,7 @@ def lbfgs(
     all_x_k.append(x.copy())
     all_f_k.append(f(x))
 
-    B0 = np.eye(len(x))  # Hessian approximation
+    B0 = eye(len(x))  # Hessian approximation
 
     grad_x = f_grad(x)
 
@@ -96,7 +97,7 @@ def lbfgs(
         if new_grad is None:
             new_grad = f_grad(x)
         y = new_grad - grad_x
-        mu = 1 / np.dot(y, s)
+        mu = 1 / safe_sparse_dot(y, s)
         ##################################################################
         # Update the memory
         y_list.append(y.copy())
