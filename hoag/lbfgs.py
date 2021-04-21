@@ -41,12 +41,11 @@ def two_loops(grad_x, m, s_list, y_list, mu_list, B0):
         r += (alpha - beta) * s
     return -r
 
-def lbfgs(x0, f, f_grad, f_hessian):
+def lbfgs(x0, f, f_grad, f_hessian, max_iter=100, m=2, tol=1e-6):
     default_step = 0.01
     c1 = 0.0001
     c2 = 0.9
-    max_iter = 100
-    m = 2
+
 
     # This variable is used to indicate whether or not we want to print
     # monitoring information (iteration counter, function value and norm of the gradient)
@@ -103,7 +102,7 @@ def lbfgs(x0, f, f_grad, f_hessian):
             print('iter: %d, f: %.6g, l_inf_norm(grad): %.6g' %
                   (k, new_f, l_inf_norm_grad))
 
-        if l_inf_norm_grad < 1e-6:
+        if l_inf_norm_grad < tol:
             break
 
         grad_x = new_grad
