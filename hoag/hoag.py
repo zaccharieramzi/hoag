@@ -143,7 +143,7 @@ def hoag_lbfgs(
             else:
                 pass
         else:
-            x = lbfgs(
+            lbfgs_sol = lbfgs(
                 x0=x,
                 f=lambda beta: h_func_grad(beta, lambdak)[0],
                 f_grad=lambda beta: h_func_grad(beta, lambdak)[1],
@@ -154,7 +154,9 @@ def hoag_lbfgs(
                 tol_norm=linalg.norm,
                 maxls=maxls,
                 inverse_direction_fun=lambda x: g_func_grad(x, lambdak)[1],
-            )[0][-1]
+            )
+            x = lbfgs_sol[0][-1]
+            hess_inv = lbfgs_sol[-1]
         end = time.time()
         if verbose > 0:
             print(f'Forward took {end-start} seconds')
@@ -168,20 +170,23 @@ def hoag_lbfgs(
         g_func, g_grad = g_func_grad(x, lambdak)
         start = time.time()
         if shine:
-            # taken from scipy
-            # https://github.com/scipy/scipy/blob/master/scipy/optimize/lbfgsb.py#L385-L393
-            # These two portions of the workspace are described in the mainlb
-            # subroutine in lbfgsb.f. See line 363.
-            s = wa[0: m*n].reshape(m, n)
-            y = wa[m*n: 2*m*n].reshape(m, n)
+            if pure_python:
+                Bxk = hess_inv(g_grad)
+            else:
+                # taken from scipy
+                # https://github.com/scipy/scipy/blob/master/scipy/optimize/lbfgsb.py#L385-L393
+                # These two portions of the workspace are described in the mainlb
+                # subroutine in lbfgsb.f. See line 363.
+                s = wa[0: m*n].reshape(m, n)
+                y = wa[m*n: 2*m*n].reshape(m, n)
 
-            # See lbfgsb.f line 160 for this portion of the workspace.
-            # isave(31) = the total number of BFGS updates prior the current iteration;
-            n_bfgs_updates = isave[30]
+                # See lbfgsb.f line 160 for this portion of the workspace.
+                # isave(31) = the total number of BFGS updates prior the current iteration;
+                n_bfgs_updates = isave[30]
 
-            n_corrs = min(n_bfgs_updates, maxcor)
-            hess_inv = LbfgsInvHessProduct(s[:n_corrs], y[:n_corrs])
-            Bxk = hess_inv(g_grad)
+                n_corrs = min(n_bfgs_updates, maxcor)
+                hess_inv = LbfgsInvHessProduct(s[:n_corrs], y[:n_corrs])
+                Bxk = hess_inv(g_grad)
         elif fpn:
             Bxk = g_grad
         if not (shine or fpn) or refine:

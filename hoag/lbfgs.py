@@ -137,5 +137,5 @@ def lbfgs(
             break
 
         grad_x = new_grad
-
-    return np.array(all_x_k), np.array(all_f_k)
+    hess_inv = lambda x: - two_loops(x, m, s_list, y_list, mu_list, B0)
+    return np.array(all_x_k), np.array(all_f_k), hess_inv
