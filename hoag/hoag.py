@@ -16,7 +16,7 @@ def hoag_lbfgs(
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
     projection=None, shine=False, debug=False, refine=False, fpn=False, grouped_reg=False,
-    refine_exp=0.5, pure_python=False):
+    refine_exp=0.5, pure_python=False, opa=False):
     """
     HOAG algorithm using L-BFGS-B in the inner optimization algorithm.
 
@@ -143,6 +143,10 @@ def hoag_lbfgs(
             else:
                 pass
         else:
+            if opa:
+                inverse_direction_fun = lambda x: g_func_grad(x, lambdak)[1]
+            else:
+                inverse_direction_fun = None
             lbfgs_sol = lbfgs(
                 x0=x,
                 f=lambda beta: h_func_grad(beta, lambdak)[0],
@@ -153,7 +157,7 @@ def hoag_lbfgs(
                 tol=epsilon_tol * norm_init * np.exp(np.min(old_lambdak) - np.min(lambda0)),
                 tol_norm=linalg.norm,
                 maxls=maxls,
-                inverse_direction_fun=lambda x: g_func_grad(x, lambdak)[1],
+                inverse_direction_fun=inverse_direction_fun,
             )
             x = lbfgs_sol[0][-1]
             hess_inv = lbfgs_sol[-1]
