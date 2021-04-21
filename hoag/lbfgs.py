@@ -41,10 +41,20 @@ def two_loops(grad_x, m, s_list, y_list, mu_list, B0):
         r += (alpha - beta) * s
     return -r
 
-def lbfgs(x0, f, f_grad, f_hessian, max_iter=100, m=2, tol=1e-6, tol_norm=None):
+def lbfgs(
+        x0,
+        f,
+        f_grad,
+        f_hessian,
+        max_iter=100,
+        m=2,
+        tol=1e-6,
+        tol_norm=None,
+        maxls=10,
+):
     default_step = 0.01
     c1 = 0.0001
-    c2 = 0.9
+    c2 = 0.0009
     if tol_norm is None:
         tol_norm = lambda x: np.max(np.abs(x))
 
@@ -73,15 +83,18 @@ def lbfgs(x0, f, f_grad, f_hessian, max_iter=100, m=2, tol=1e-6, tol_norm=None):
         # strong Wolfe conditions
         step, _, _, new_f, _, new_grad = optimize.line_search(f, f_grad, x,
                                                               d, grad_x,
-                                                              c1=c1, c2=c2)
+                                                              c1=c1, c2=c2,
+                                                              maxiter=maxls)
 
-        if step is None:
+        if step is None or new_grad is None:
             print("Line search did not converge at iteration %s" % k)
             step = default_step
 
         # Compute the new value of x
         s = step * d
         x += s
+        if new_grad is None:
+            new_grad = f_grad(x)
         y = new_grad - grad_x
         mu = 1 / np.dot(y, s)
         ##################################################################
