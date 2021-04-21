@@ -53,6 +53,7 @@ def lbfgs(
         tol_norm=None,
         maxls=10,
         inverse_direction_fun=None,
+        inverse_secant_freq=2,
 ):
     default_step = 0.01
     c1 = 0.0001
@@ -78,7 +79,19 @@ def lbfgs(
     y_list, s_list, mu_list = [], [], []
     t = [1 / k for k in range(1, max_iter + 1)]
     for k in range(1, max_iter + 1):
-
+        if inverse_direction_fun is not None and k%inverse_secant_freq == 0:
+            # update the memory with the extra secant condition for inverse
+            inverse_direction = inverse_direction_fun(x)
+            e = -t[k-1] * two_loops(inverse_direction, m, s_list, y_list, mu_list, B0)
+            y_tilde = f_grad(x + e) - new_grad
+            mu = 1 / safe_sparse_dot(y_tilde, e)
+            y_list.append(y_tilde.copy())
+            s_list.append(e.copy())
+            mu_list.append(mu)
+            if len(y_list) > m:
+                y_list.pop(0)
+                s_list.pop(0)
+                mu_list.pop(0)
         # Compute the search direction
         d = two_loops(grad_x, m, s_list, y_list, mu_list, B0)
 
@@ -105,23 +118,10 @@ def lbfgs(
         y_list.append(y.copy())
         s_list.append(s.copy())
         mu_list.append(mu)
-        if inverse_direction_fun is not None:
-            # update the memory with the extra secant condition for inverse
-            inverse_direction = inverse_direction_fun(x)
-            e = -t[k-1] * two_loops(inverse_direction, m, s_list, y_list, mu_list, B0)
-            y_tilde = f_grad(x + e) - new_grad
-            mu = 1 / safe_sparse_dot(y_tilde, e)
-            y_list.append(y_tilde.copy())
-            s_list.append(e.copy())
-            mu_list.append(mu)
         if len(y_list) > m:
             y_list.pop(0)
             s_list.pop(0)
             mu_list.pop(0)
-            if inverse_direction_fun is not None:
-                y_list.pop(0)
-                s_list.pop(0)
-                mu_list.pop(0)
         ##################################################################
 
         all_x_k.append(x.copy())
