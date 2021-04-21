@@ -76,6 +76,7 @@ def lbfgs(
     grad_x = f_grad(x)
 
     y_list, s_list, mu_list = [], [], []
+    t = [1 / k for k in range(1, max_iter + 1)]
     for k in range(1, max_iter + 1):
 
         # Compute the search direction
@@ -107,7 +108,7 @@ def lbfgs(
         if inverse_direction_fun is not None:
             # update the memory with the extra secant condition for inverse
             inverse_direction = inverse_direction_fun(x)
-            e = two_loops(inverse_direction, m, s_list, y_list, mu_list, B0)
+            e = -t[k-1] * two_loops(inverse_direction, m, s_list, y_list, mu_list, B0)
             y_tilde = f_grad(x + e) - new_grad
             mu = 1 / safe_sparse_dot(y_tilde, e)
             y_list.append(y_tilde.copy())
