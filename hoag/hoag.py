@@ -6,6 +6,7 @@ from scipy import linalg
 from scipy.optimize.lbfgsb import _lbfgsb, LbfgsInvHessProduct
 from scipy.sparse import linalg as splinalg
 
+from hoag.lbfgs import lbfgs
 
 def hoag_lbfgs(
     h_func_grad, h_hessian, h_crossed, g_func_grad, x0, bounds=None,
@@ -15,7 +16,7 @@ def hoag_lbfgs(
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
     projection=None, shine=False, debug=False, refine=False, fpn=False, grouped_reg=False,
-    refine_exp=0.5):
+    refine_exp=0.5, pure_python=False):
     """
     HOAG algorithm using L-BFGS-B in the inner optimization algorithm.
 
@@ -107,39 +108,50 @@ def hoag_lbfgs(
         task[:] = 'START'
         old_x = x.copy()
         start = time.time()
-        while 1:
-            pgtol_lbfgs = 1e-120
-            factr = 1e-120  # / np.finfo(float).eps
-            _lbfgsb.setulb(
-                m, x, low_bnd, upper_bnd, nbd, h_func, h_grad,
-                factr, pgtol_lbfgs, wa, iwa, task, iprint, csave, lsave,
-                isave, dsave, maxls)
-            task_str = task.tostring()
-            if task_str.startswith(b'FG'):
-                # minimization routine wants h_func and h_grad at the current x
-                # Overwrite h_func and h_grad:
-                h_func, h_grad = h_func_grad(x, lambdak)
-                if linalg.norm(h_grad)  < \
-                    epsilon_tol * norm_init * np.exp(np.min(old_lambdak) - np.min(lambda0)):
-                    # this one is finished
-                    break
+        if not pure_python:
+            while 1:
+                pgtol_lbfgs = 1e-120
+                factr = 1e-120  # / np.finfo(float).eps
+                _lbfgsb.setulb(
+                    m, x, low_bnd, upper_bnd, nbd, h_func, h_grad,
+                    factr, pgtol_lbfgs, wa, iwa, task, iprint, csave, lsave,
+                    isave, dsave, maxls)
+                task_str = task.tostring()
+                if task_str.startswith(b'FG'):
+                    # minimization routine wants h_func and h_grad at the current x
+                    # Overwrite h_func and h_grad:
+                    h_func, h_grad = h_func_grad(x, lambdak)
+                    if linalg.norm(h_grad)  < \
+                        epsilon_tol * norm_init * np.exp(np.min(old_lambdak) - np.min(lambda0)):
+                        # this one is finished
+                        break
 
-            elif task_str.startswith(b'NEW_X'):
-                # new iteration
-                if n_iterations > maxiter_inner:
-                    task[:] = 'STOP: TOTAL NO. of ITERATIONS EXCEEDS LIMIT'
-                    print('ITERATIONS EXCEEDS LIMIT')
-                    continue
-                    # break
+                elif task_str.startswith(b'NEW_X'):
+                    # new iteration
+                    if n_iterations > maxiter_inner:
+                        task[:] = 'STOP: TOTAL NO. of ITERATIONS EXCEEDS LIMIT'
+                        print('ITERATIONS EXCEEDS LIMIT')
+                        continue
+                        # break
+                    else:
+                        n_iterations += 1
                 else:
-                    n_iterations += 1
+                    if verbose > 1:
+                        print('LBFGS decided finish!')
+                        print(task_str)
+                    break
             else:
-                if verbose > 1:
-                    print('LBFGS decided finish!')
-                    print(task_str)
-                break
+                pass
         else:
-            pass
+            x = lbfgs(
+                x0=x,
+                f=lambda beta: h_func_grad(beta, lambdak)[0],
+                f_grad=lambda beta: h_func_grad(beta, lambdak)[1],
+                f_hessian=None,  # unused
+                max_iter=maxiter_inner,
+                m=m,
+                tol=epsilon_tol * norm_init * np.exp(np.min(old_lambdak) - np.min(lambda0)),
+            )[0][-1]
         end = time.time()
         if verbose > 0:
             print(f'Forward took {end-start} seconds')
