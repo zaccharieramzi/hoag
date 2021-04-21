@@ -52,7 +52,7 @@ def lbfgs(
         tol=1e-6,
         tol_norm=None,
         maxls=10,
-        inverse_direction=None,
+        inverse_direction_fun=None,
 ):
     default_step = 0.01
     c1 = 0.0001
@@ -104,8 +104,9 @@ def lbfgs(
         y_list.append(y.copy())
         s_list.append(s.copy())
         mu_list.append(mu)
-        if inverse_direction is not None:
+        if inverse_direction_fun is not None:
             # update the memory with the extra secant condition for inverse
+            inverse_direction = inverse_direction_fun(x)
             e = two_loops(inverse_direction, m, s_list, y_list, mu_list, B0)
             y_tilde = f_grad(x + e) - new_grad
             mu = 1 / safe_sparse_dot(y_tilde, e)
@@ -116,7 +117,7 @@ def lbfgs(
             y_list.pop(0)
             s_list.pop(0)
             mu_list.pop(0)
-            if inverse_direction is not None:
+            if inverse_direction_fun is not None:
                 y_list.pop(0)
                 s_list.pop(0)
                 mu_list.pop(0)
