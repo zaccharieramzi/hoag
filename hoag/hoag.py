@@ -282,7 +282,9 @@ def hoag_lbfgs(
         else:
             lambdak = projection(lambdak)
 
-
+        # projection
+        lambdak[lambdak < -6] = -6
+        lambdak[lambdak > 6] = 6
         # if g_func - g_func_old > 0:
         #     raise ValueError
         norm_grad_lambda = linalg.norm(grad_lambda)
