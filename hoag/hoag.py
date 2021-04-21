@@ -152,6 +152,7 @@ def hoag_lbfgs(
                 m=m,
                 tol=epsilon_tol * norm_init * np.exp(np.min(old_lambdak) - np.min(lambda0)),
                 tol_norm=linalg.norm,
+                maxls=maxls,
             )[0][-1]
         end = time.time()
         if verbose > 0:
