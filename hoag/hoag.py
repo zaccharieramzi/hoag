@@ -153,7 +153,7 @@ def hoag_lbfgs(
                 tol=epsilon_tol * norm_init * np.exp(np.min(old_lambdak) - np.min(lambda0)),
                 tol_norm=linalg.norm,
                 maxls=maxls,
-                inverse_direction_fun=lambda x: np.ones_like(x),
+                inverse_direction_fun=lambda x: x,
             )[0][-1]
         end = time.time()
         if verbose > 0:
