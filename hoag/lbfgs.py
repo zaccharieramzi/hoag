@@ -41,10 +41,12 @@ def two_loops(grad_x, m, s_list, y_list, mu_list, B0):
         r += (alpha - beta) * s
     return -r
 
-def lbfgs(x0, f, f_grad, f_hessian, max_iter=100, m=2, tol=1e-6):
+def lbfgs(x0, f, f_grad, f_hessian, max_iter=100, m=2, tol=1e-6, tol_norm=None):
     default_step = 0.01
     c1 = 0.0001
     c2 = 0.9
+    if tol_norm is None:
+        tol_norm = lambda x: np.max(np.abs(x))
 
 
     # This variable is used to indicate whether or not we want to print
@@ -96,7 +98,7 @@ def lbfgs(x0, f, f_grad, f_hessian, max_iter=100, m=2, tol=1e-6):
         all_x_k.append(x.copy())
         all_f_k.append(new_f)
 
-        l_inf_norm_grad = np.max(np.abs(new_grad))
+        l_inf_norm_grad = tol_norm(new_grad)
 
         if verbose:
             print('iter: %d, f: %.6g, l_inf_norm(grad): %.6g' %
