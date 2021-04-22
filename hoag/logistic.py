@@ -95,7 +95,7 @@ class LogisticRegressionCV(linear_model._base.BaseEstimator,
             callback=callback,
             tolerance_decrease=self.tolerance_decrease,
             lambda0=np.array([self.alpha0]), maxiter=self.max_iter,
-            verbose=self.verbose, shine=self.shine, **self.lbfgs_kwargs)
+            verbose=self.verbose, shine=self.shine, full_hessian=full_hessian, **self.lbfgs_kwargs)
 
         # opt = _minimize_lbfgsb(
         #     h_func_grad, DE_DX, H, x0, callback=callback,
@@ -210,6 +210,29 @@ def _logistic_loss(w, X, y, alpha, sample_weight=None):
     # Logistic loss is the negative of the log of the logistic function.
     out = -np.sum(sample_weight * log_logistic(yz)) + .5 * alpha * np.dot(w, w)
     return out
+
+
+def full_hessian(w, X, y, alpha):
+    n_samples, n_features = X.shape
+
+    w, c, yz = _intercept_dot(w, X, y)
+
+    z = expit(yz)
+    z0 = (z - 1) * y
+
+    # The mat-vec product of the Hessian
+    d = z * (1 - z)
+    if sparse.issparse(X):
+        dX = safe_sparse_dot(sparse.dia_matrix((d, 0),
+                             shape=(n_samples, n_samples)), X)
+    else:
+        # Precompute as much as possible
+        dX = d[:, np.newaxis] * X
+
+    H = X.T.dot(dX)
+    H += alpha * np.eye(n_features)
+
+    return H
 
 
 def _logistic_grad_hess(w, X, y, alpha, sample_weight=None):
