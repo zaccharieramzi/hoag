@@ -54,18 +54,14 @@ def lbfgs(
         maxls=10,
         inverse_direction_fun=None,
         inverse_secant_freq=1,
-        warm_restart_lists=None
+        warm_restart_lists=None,
+        verbose=0,
 ):
     default_step = 0.01
     c1 = 0.0001
     c2 = 0.0009
     if tol_norm is None:
         tol_norm = lambda x: np.max(np.abs(x))
-
-
-    # This variable is used to indicate whether or not we want to print
-    # monitoring information (iteration counter, function value and norm of the gradient)
-    verbose = False
 
     all_x_k, all_f_k = list(), list()
     x = x0
@@ -106,7 +102,8 @@ def lbfgs(
                                                               maxiter=maxls)
 
         if step is None or new_grad is None:
-            print("Line search did not converge at iteration %s" % k)
+            if verbose > 0:
+                print("Line search did not converge at iteration %s" % k)
             step = default_step
 
         # Compute the new value of x
@@ -132,7 +129,7 @@ def lbfgs(
 
         l_inf_norm_grad = tol_norm(new_grad)
 
-        if verbose:
+        if verbose > 1:
             print('iter: %d, f: %.6g, l_inf_norm(grad): %.6g' %
                   (k, new_f, l_inf_norm_grad))
 
