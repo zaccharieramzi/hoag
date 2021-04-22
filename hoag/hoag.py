@@ -101,6 +101,7 @@ def hoag_lbfgs(
     norm_init = linalg.norm(h_grad)
     old_grads = []
     old_lambdak = lambdak.copy()
+    warm_restart_lists = None
 
     for it in range(1, maxiter):
         h_func, h_grad = h_func_grad(x, lambdak)
@@ -147,7 +148,7 @@ def hoag_lbfgs(
                 inverse_direction_fun = lambda x: g_func_grad(x, lambdak)[1]
             else:
                 inverse_direction_fun = None
-            lbfgs_sol = lbfgs(
+            xs, _, hess_inv, warm_restart_lists = lbfgs(
                 x0=x,
                 f=lambda beta: h_func_grad(beta, lambdak)[0],
                 f_grad=lambda beta: h_func_grad(beta, lambdak)[1],
@@ -158,9 +159,9 @@ def hoag_lbfgs(
                 tol_norm=linalg.norm,
                 maxls=maxls,
                 inverse_direction_fun=inverse_direction_fun,
+                warm_restart_lists=warm_restart_lists,
             )
-            x = lbfgs_sol[0][-1]
-            hess_inv = lbfgs_sol[-1]
+            x = xs[-1]
         end = time.time()
         if verbose > 0:
             print(f'Forward took {end-start} seconds')

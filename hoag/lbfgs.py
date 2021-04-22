@@ -54,6 +54,7 @@ def lbfgs(
         maxls=10,
         inverse_direction_fun=None,
         inverse_secant_freq=1,
+        warm_restart_lists=None
 ):
     default_step = 0.01
     c1 = 0.0001
@@ -77,6 +78,8 @@ def lbfgs(
     grad_x = f_grad(x)
 
     y_list, s_list, mu_list = [], [], []
+    if warm_restart_lists is not None:
+        s_list, y_list, mu_list = warm_restart_lists
     t = [1 / k for k in range(1, max_iter + 1)]
     for k in range(1, max_iter + 1):
         if inverse_direction_fun is not None and k%inverse_secant_freq == 0:
@@ -138,4 +141,5 @@ def lbfgs(
 
         grad_x = new_grad
     hess_inv = lambda x: - two_loops(x, m, s_list, y_list, mu_list, B0)
-    return np.array(all_x_k), np.array(all_f_k), hess_inv
+    warm_restart_lists = [s_list, y_list, mu_list]
+    return np.array(all_x_k), np.array(all_f_k), hess_inv, warm_restart_lists
