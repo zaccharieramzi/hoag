@@ -16,7 +16,7 @@ def hoag_lbfgs(
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
     projection=None, shine=False, debug=False, refine=False, fpn=False, grouped_reg=False,
-    refine_exp=0.5, pure_python=False, opa=False):
+    refine_exp=0.5, pure_python=False, opa=False, **kwargs):
     """
     HOAG algorithm using L-BFGS-B in the inner optimization algorithm.
 
@@ -162,6 +162,17 @@ def hoag_lbfgs(
                 warm_restart_lists=warm_restart_lists,
             )
             x = xs[-1]
+            if debug:
+                def compute_inverse_correctness(H, hess_inv, inv_direction):
+                    true_inv = np.linalg.solve(H, inv_direction)
+                    approx_inv = hess_inv(inv_direction)
+                    rdiff = np.linalg.norm(true_inv - approx_inv) / np.linalg.norm(true_inv)
+                    ratio = np.linalg.norm(approx_inv) / np.linalg.norm(true_inv)
+                    correl = np.dot(true_inv, approx_inv) / (np.linalg.norm(true_inv)*np.linalg.norm(approx_inv))
+                    return rdiff, ratio, correl, np.linalg.norm(approx_inv)
+                H = kwargs['full_hessian'](x, kwargs['X'], kwargs['y'], lambdak)
+                print('Add direction (rdiff, ratio, correl, norm)', compute_inverse_correctness(H, hess_inv, inverse_direction_fun(x)))
+                # print('Krylov direction (rdiff, ratio, correl)', compute_inverse_correctness(H, hess_inv, H.dot(warm_restart_lists[0][-1])))
         end = time.time()
         if verbose > 0:
             print(f'Forward took {end-start} seconds')
