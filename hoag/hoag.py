@@ -271,8 +271,8 @@ def hoag_lbfgs(
         lambdak -= step_size * grad_lambda
 
         # projection
-        lambdak[lambdak < -6] = -6
-        lambdak[lambdak > 6] = 6
+        lambdak[lambdak < -12] = -12
+        lambdak[lambdak > 12] = 12
         incr = linalg.norm(step_size * grad_lambda)
 
         C = 0.25
@@ -304,8 +304,8 @@ def hoag_lbfgs(
             lambdak = projection(lambdak)
 
         # projection
-        lambdak[lambdak < -6] = -6
-        lambdak[lambdak > 6] = 6
+        lambdak[lambdak < -12] = -12
+        lambdak[lambdak > 12] = 12
         # if g_func - g_func_old > 0:
         #     raise ValueError
         norm_grad_lambda = linalg.norm(grad_lambda)
