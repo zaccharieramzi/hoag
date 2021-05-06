@@ -170,9 +170,9 @@ def hoag_lbfgs(
                     ratio = np.linalg.norm(approx_inv) / np.linalg.norm(true_inv)
                     correl = np.dot(true_inv, approx_inv) / (np.linalg.norm(true_inv)*np.linalg.norm(approx_inv))
                     return rdiff, ratio, correl, np.linalg.norm(approx_inv)
-                H = kwargs['full_hessian'](x, kwargs['X'], kwargs['y'], lambdak)
+                H = kwargs['full_hessian'](x, kwargs['X'], kwargs['y'], np.exp(lambdak))
                 print('Add direction (rdiff, ratio, correl, norm)', compute_inverse_correctness(H, hess_inv, inverse_direction_fun(x)))
-                # print('Krylov direction (rdiff, ratio, correl)', compute_inverse_correctness(H, hess_inv, H.dot(warm_restart_lists[0][-1])))
+                print('Krylov direction (rdiff, ratio, correl)', compute_inverse_correctness(H, hess_inv, H.dot(warm_restart_lists[0][-1])))
         end = time.time()
         if verbose > 0:
             print(f'Forward took {end-start} seconds')
