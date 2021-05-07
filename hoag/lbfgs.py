@@ -78,10 +78,11 @@ def lbfgs(
         s_list, y_list, mu_list = warm_restart_lists
     t = [1 / k for k in range(1, max_iter + 1)]
     for k in range(1, max_iter + 1):
-        if inverse_direction_fun is not None and k%inverse_secant_freq == 0:
+        if inverse_direction_fun is not None and k%inverse_secant_freq == 0 and k > 1:
             # update the memory with the extra secant condition for inverse
             inverse_direction = inverse_direction_fun(x)
             e = -t[k-1] * two_loops(inverse_direction, m, s_list, y_list, mu_list, B0)
+            e = e / np.linalg.norm(e) * np.linalg.norm(s)
             y_tilde = f_grad(x + e) - grad_x
             mu = 1 / safe_sparse_dot(y_tilde, e)
             y_list.append(y_tilde.copy())
