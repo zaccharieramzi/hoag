@@ -214,7 +214,7 @@ def framed_results_for_kwargs(n_random_seed=10, **kwargs):
             overall_res.lamda_times[i_seed],
             overall_res.val_losses[i_seed],
             overall_res.test_losses[i_seed],
-        ]))
+        ]).T)
         df_seed['seed'] = i_seed
         for k, v in kwargs.items():
             df_seed[k] = v
