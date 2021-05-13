@@ -218,7 +218,7 @@ def framed_results_for_kwargs(n_random_seed=10, **kwargs):
         df_seed['seed'] = i_seed
         for k, v in kwargs.items():
             df_seed[k] = v
-        df_res.append(df_seed)
+        df_res = df_res.append(df_seed)
     return df_res
 
 def quantized_results_for_kwargs(**kwargs):
