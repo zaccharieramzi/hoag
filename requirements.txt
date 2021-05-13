@@ -1,4 +1,5 @@
 libsvmdata
-sciki-learn
+scikit-learn
 keras
 tensorflow
+pandas
