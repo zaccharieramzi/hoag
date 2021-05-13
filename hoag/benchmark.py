@@ -4,6 +4,7 @@ from typing import List
 
 from libsvmdata import fetch_libsvm
 import numpy as np
+import pandas as pd
 import scipy.sparse as sp
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
@@ -193,6 +194,32 @@ def randomized_results_for_kwargs(n_random_seed=10, **kwargs):
         res = results_for_kwargs(random_state=seed, **kwargs)
         overall_res.append(res)
     return overall_res
+
+def framed_results_for_kwargs(n_random_seed=10, **kwargs):
+    overall_res = randomized_results_for_kwargs(n_random_seed=n_random_seed, **kwargs)
+    seed_columns = [
+        'i_iter',
+        'time',
+        'val_loss',
+        'test_loss',
+    ]
+    df_res = pd.DataFrame(columns=[
+        'seed',
+        *seed_columns,
+        *kwargs.keys(),
+    ])
+    for i_seed in range(n_random_seed):
+        df_seed = pd.DataFrame(columns=seed_columns, data=np.array([
+            range(len(overall_res.lamda_times[i_seed])),
+            overall_res.lamda_times[i_seed],
+            overall_res.val_losses[i_seed],
+            overall_res.test_losses[i_seed],
+        ]))
+        df_seed['seed'] = i_seed
+        for k, v in kwargs.items():
+            df_seed[k] = v
+        df_res.append(df_seed)
+    return df_res
 
 def quantized_results_for_kwargs(**kwargs):
     overall_res = randomized_results_for_kwargs(**kwargs)
