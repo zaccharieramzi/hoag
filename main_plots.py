@@ -1,57 +1,23 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-get_ipython().run_line_magic('matplotlib', 'notebook')
-import pickle
-from dataclasses import fields
-
 import matplotlib.pyplot as plt
 import pandas as pd
 
 from hoag.benchmark import framed_results_for_kwargs
 
-
-# In[2]:
-
-
 import warnings
 warnings.filterwarnings("ignore")
-
-
-# In[3]:
-
 
 plt.style.use(['science'])
 plt.rcParams['font.size'] = 8
 plt.rcParams['xtick.labelsize'] = 6
 plt.rcParams['ytick.labelsize'] = 6
 
-
-# In[4]:
-
-
 save_results = False
 reload_results = False
-correct_rs = False
-correct_fpn = False
-dataset = 'real-sim'
+appendix_figure = False
 maxiter_inner = 1000
 max_iter = 30
 train_prop = 90/100
-results_name = f'{dataset}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
-
-
-# In[5]:
-
-
-results_name
-
-
-# In[13]:
-
+datasets = ['20news', 'real-sim']
 
 schemes = {
     'warm-up': dict(max_iter=2, tol=0.1),
@@ -64,59 +30,22 @@ schemes = {
     'truncated-inversion': dict(max_iter=30, shine=False, maxiter_inner=maxiter_inner, maxiter_backward=5, refine=True),
 }
 
-
-# In[14]:
-
-
-# %%time
-if reload_results:
-    schemes_results = {
-        scheme_label: framed_results_for_kwargs(train_prop=train_prop, dataset=dataset, n_random_seed=10, **scheme_kwargs)
-        for scheme_label, scheme_kwargs in schemes.items()
-    }
-else:
-    big_df_res = pd.read_csv(results_name)
-
-
-# In[15]:
-
-
-# correcting random search
-if not reload_results and correct_rs:
-    rs_label = 'random-search'
-    schemes_results[rs_label] = quantized_results_for_kwargs(train_prop=train_prop, dataset=dataset, n_random_seed=10, **schemes[rs_label])
-
-
-# In[16]:
-
-
-# correcting random search
-if not reload_results and correct_fpn:
-    rs_label = 'fpn'
-    schemes_results[rs_label] = quantized_results_for_kwargs(train_prop=train_prop, dataset=dataset, n_random_seed=10, **schemes[rs_label])
-
-
-# In[17]:
-
-
-big_df_res = None
-for scheme_label, df_res in schemes_results.items():
-    df_res['scheme_label'] = scheme_label
-    if big_df_res is None:
-        big_df_res = df_res
-    else:
-        big_df_res = big_df_res.append(df_res)
-
-
-# In[18]:
-
-
-if save_results:
-    big_df_res.to_csv(results_name)
-
-
-# In[6]:
-
+for dataset in datasets:
+    results_name = f'{dataset}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
+    if reload_results:
+        schemes_results = {
+            scheme_label: framed_results_for_kwargs(train_prop=train_prop, dataset=dataset, n_random_seed=10, **scheme_kwargs)
+            for scheme_label, scheme_kwargs in schemes.items()
+        }
+        big_df_res = None
+        for scheme_label, df_res in schemes_results.items():
+            df_res['scheme_label'] = scheme_label
+            if big_df_res is None:
+                big_df_res = df_res
+            else:
+                big_df_res = big_df_res.append(df_res)
+        if save_results:
+            big_df_res.to_csv(results_name)
 
 schemes_naming = {
     'shine-big-rank-refined': r'\textbf{SHINE refine (ours)}',
@@ -127,10 +56,6 @@ schemes_naming = {
     'random-search': 'Random search',
     'truncated-inversion': 'HOAG - lim. backward'
 }
-
-
-# In[7]:
-
 
 def load_results(results_name):
     return pd.read_csv(results_name)
@@ -146,7 +71,6 @@ zoom_lims = {
     ]
 }
 
-appendix_figure = False
 
 if not appendix_figure:
     included_schemes = [
@@ -225,75 +149,3 @@ if appendix_figure:
     fig.savefig('bilevel_test_appendix.pdf', dpi=300)
 else:
     fig.savefig('bilevel_test.pdf', dpi=300)
-
-
-# In[ ]:
-
-
-legend.
-
-
-# In[94]:
-
-
-
-
-# fig = plt.figure(figsize=(5.5, 7))
-# g = plt.GridSpec(3, 1, height_ratios=[0.3, 0.7, 0.7])
-# for i, dataset in enumerate(['20news', 'real-sim']):
-#     results_name = f'{dataset}_mi{maxiter_inner}_tp{train_prop:.2f}_results.pkl'
-#     schemes_results = load_results(results_name)
-#     ax = fig.add_subplot(g[i+1, 0])
-#     handles, labels = [], []
-#     for scheme_label in included_schemes:
-#         scheme_results = schemes_results[scheme_label]
-#         median_res, q1_res, q9_res = scheme_results
-#         handles.extend(ax.plot(
-#             median_res.lamda_times, median_res.test_losses,
-#             label=schemes_naming[scheme_label], linewidth=2,
-#             **styles[scheme_label]
-#         ))
-#         ax.fill_between(
-#             median_res.lamda_times, q1_res.test_losses,
-#             q9_res.test_losses, color=handles[-1].get_color(),
-#             alpha=.1 if zoom else .3
-#         )
-#         labels.append(schemes_naming[scheme_label])
-#     if i == 1:
-#         ax.set_xlabel('Time (s)')
-#     ax.set_ylabel('Loss')
-#     zoom = zoom_lims[dataset]
-#     ax.set_xlim(-0.1, zoom[0])
-#     ax.set_ylim(top=zoom[1])
-
-# ax_legend = fig.add_subplot(g[0, :])
-# ax_legend.axis('off')
-# ax_legend.legend(handles, labels, loc='center', ncol=4)
-# fig.savefig('bilevel_test_appendix.pdf', dpi=300)
-# # if zoom:
-# #     plt.xlim(left=-0.1, right=zoom_lims[0])
-# #     plt.ylim(top=zoom_lims[1])
-# #     plt.savefig(f'{results_name}_test_zoom.png')
-# # else:
-# #     plt.savefig(f'{results_name}_test.png')
-
-
-# In[1]:
-
-
-# plt.figure(figsize=(13, 7))
-# for scheme_label, scheme_results in schemes_results.items():
-#     if scheme_label == 'warm-up':
-#         continue
-#     median_res, q1_res, q9_res = scheme_results
-#     p = plt.plot(median_res.lamda_times, median_res.test_losses, label=scheme_label, linewidth=3)
-#     plt.fill_between(median_res.lamda_times, q1_res.test_losses, q9_res.test_losses, color=p[0].get_color(), alpha=.3)
-# plt.title(f'Test loss on {dataset}')
-# plt.legend()
-
-
-# In[ ]:
-
-
-
-
