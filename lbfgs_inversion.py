@@ -1,26 +1,14 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[1]:
-
-
-get_ipython().run_line_magic('load_ext', 'autoreload')
-get_ipython().run_line_magic('autoreload', '2')
-get_ipython().run_line_magic('matplotlib', 'inline')
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import numpy as np
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
-
-# In[2]:
-
+from hoag.logistic import _intercept_dot, log_logistic, expit, safe_sparse_dot, sparse, np
+from hoag.lbfgs import lbfgs
 
 import warnings
 warnings.filterwarnings("ignore")
-
-
-# In[3]:
-
 
 plt.style.use(['science'])
 plt.rcParams['figure.figsize'] = (5.5, 2.8)
@@ -28,39 +16,6 @@ plt.rcParams['font.size'] = 8
 plt.rcParams['xtick.labelsize'] = 6
 plt.rcParams['ytick.labelsize'] = 6
 
-
-# In[4]:
-
-
-plt.rcParams
-
-
-# In[5]:
-
-
-# # our problem is f(x) = 0.5 * x^T Ax + b^Tx
-# # grad_f(x) = Ax + b
-# # hess_f(x) = A
-# dim = 100
-# A = np.random.normal(size=[dim, dim])
-# A = A.dot(A.T)
-# b = np.random.normal(size=[dim])
-# def f(x):
-#     return 0.5 * np.dot(x, np.dot(A, x)) + np.dot(b, x)
-
-# def grad_f(x):
-#     return np.dot(A, x) + b
-
-# def hess_f(x):
-#     return A
-
-
-# In[6]:
-
-
-from sklearn.datasets import load_breast_cancer
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 
 X, y = load_breast_cancer(return_X_y=True)
 y[y==0] = -1
@@ -74,23 +29,6 @@ X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, r
 dim = 30
 samples = 113
 n_samples = 113
-
-
-# In[7]:
-
-
-# X = np.random.normal(size=[n_samples, dim])
-# y = (np.random.normal(size=[n_samples]) > 0).astype(np.int)
-
-
-# In[8]:
-
-
-from hoag.logistic import _intercept_dot, log_logistic, expit, safe_sparse_dot, sparse, np
-
-# dim = 10
-# n_samples = 100
-
 
 def f(w):
     _, n_features = X.shape
@@ -139,16 +77,6 @@ def hess_f(w):
 
     return H
 
-
-# In[9]:
-
-
-from hoag.lbfgs import lbfgs
-
-
-# In[10]:
-
-
 def compute_inverse_correctness(H, hess_inv, inv_direction):
     true_inv = np.linalg.solve(H, inv_direction)
     approx_inv = hess_inv(inv_direction)
@@ -158,22 +86,12 @@ def compute_inverse_correctness(H, hess_inv, inv_direction):
     return rdiff, ratio, correl, np.linalg.norm(true_inv)
 
 
-# lim (B - F') h = 0
-# lim (I - B-1 F') h =0
-# lim (F'-1 F' B-1F')h = 0
-# lim (F'-1 - B-1) F'h = 0
-
-# In[11]:
-
-
 n_tries = 100
 results = {
     'Additional direction': [],
     'Krylov direction': [],
     'Random direction': [],
 }
-# X = np.random.normal(size=[n_samples, dim])
-# y = (np.random.normal(size=[n_samples]) > 0).astype(np.int)
 X = X_train
 y = y_train
 alpha = 1
@@ -194,54 +112,15 @@ for i in range(n_tries):
     )
     H = hess_f(xs[-1])
     directions = {
-        'Additional direction': inverse_direction, 
+        'Additional direction': inverse_direction,
         # here H = F'(u*), warm_lists[0][-1] = u* - u*-1
-        'Krylov direction': H.dot(warm_lists[0][-1]), 
+        'Krylov direction': H.dot(warm_lists[0][-1]),
         'Random direction': np.random.normal(size=(dim,)),
     }
     for dir_name, inv_direction in directions.items():
         results[dir_name].append(
             compute_inverse_correctness(H, hess_inv, inv_direction)
         )
-
-
-# In[12]:
-
-
-plt.figure(figsize=(13, 7))
-metric = 2 # 0 rdiff, 1 ratio, 2 correl
-ticks = []
-ticks_positions = [0]
-for dir_name, dir_res in results.items():
-    ticks.append(dir_name)
-    ticks_positions.append(ticks_positions[-1] + 1)
-    plt.boxplot([1 - m[metric] for m in dir_res], positions=[ticks_positions[-1]]);
-ticks_positions.pop(0)
-plt.yscale('log')
-plt.ylabel(r'$1 - \operatorname{cossim}(B_n^{-1}v, J_{g_{\theta}}(z^\star)^{-1}v)$')
-plt.xticks(ticks_positions, ticks)
-plt.savefig('lfbgs_inversion_opa_correl.png');
-
-
-# In[13]:
-
-
-plt.figure(figsize=(13, 7))
-metric = 1 # 0 rdiff, 1 ratio, 2 correl
-ticks = []
-ticks_positions = [0]
-for dir_name, dir_res in results.items():
-    ticks.append(dir_name)
-    ticks_positions.append(ticks_positions[-1] + 1)
-    plt.boxplot([m[metric] for m in dir_res], positions=[ticks_positions[-1]]);
-ticks_positions.pop(0)
-# plt.yscale('log')
-plt.ylabel(r'$\frac{\|B_n^{-1}v \|}{\| J_{g_{\theta}}(z^\star)^{-1}v \|}$')
-plt.xticks(ticks_positions, ticks)
-plt.savefig('lfbgs_inversion_opa_ratio.png');
-
-
-# In[28]:
 
 
 fig = plt.figure(figsize=(5.5 * 0.48, 2.1*0.48))
@@ -268,27 +147,13 @@ for dir_name, dir_res in results.items():
     );
 ax.set_ylim([0.994, 1.0005])
 handles, labels = ax.get_legend_handles_labels()
-# ax.loglog()
-# plt.ylabel(r'$\operatorname{cossim}(B_n^{-1}v, J_{g_{\theta}}(z^\star)^{-1}v)$')
 ax.set_ylabel(r'$\operatorname{cossim}(a, b)$')
-# plt.xlabel(r'$\frac{\|B_n^{-1}v \|}{\| J_{g_{\theta}}(z^\star)^{-1}v \|}$')
 ax.set_xlabel(r'$\frac{\|a \|}{\| b \|}$')
 ### legend
 ax_legend = fig.add_subplot(g[0, -1])
 legend = ax_legend.legend(handles, labels, loc='center', ncol=1, handlelength=1.5, handletextpad=.2, title=r'\textbf{Direction}')
 ax_legend.axis('off')
-# plt.legend(frameon=True)
 plt.savefig('lfbgs_inversion_opa_scatter.pdf', dpi=300);
 
 
-# In[15]:
-
-
-get_ipython().run_line_magic('debug', '')
-
-
 # In[ ]:
-
-
-
-
