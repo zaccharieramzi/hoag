@@ -129,7 +129,7 @@ ax = fig.add_subplot(g[0, 0])
 styles = {
     'Additional direction': dict(color='C2', marker='o'),
     'Krylov direction': dict(color='C1', marker='*'),
-    'Random direction': dict(color='C0', marker='^'),
+    'Random direction': dict(color='C0', marker='^', alpha=0.5),
 }
 naming = {
     'Additional direction': 'Additional',

@@ -137,6 +137,7 @@ for i, dataset in enumerate(['20news', 'real-sim']):
     if i == 0:
         ax.set_ylabel('Loss')
     ax.set_title(dataset)
+    ax.set_xlim(left=0)
 
 if appendix_figure:
     ax_legend = fig.add_subplot(g[-1, 0])
