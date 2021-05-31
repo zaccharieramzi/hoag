@@ -8,6 +8,9 @@ This source code allows to reproduce the experiments on logistic regression, i.e
 You need Python 3.7 or above to run this code.
 You can then install the requirements with: `pip install -r requirements.txt`.
 
+When running the scripts, you will see the following warning printed: `CG did not converge to the desired precision`.
+It does not indicate that there is a problem with your current run.
+
 ## Reproducing Figure 1, Quality of the inversion using OPA
 
 Figure 1. can be reproduced by running the `lbfgs_inversion.py` script:
