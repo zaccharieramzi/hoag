@@ -19,6 +19,8 @@ Figure 1. can be reproduced by running the `lbfgs_inversion.py` script:
 python lbfgs_inversion.py
 ```
 
+It will take you about 8 seconds to run this script.
+
 ## Reproducing Figure 2, Bi-level optimization
 
 Figure 2. can be reproduced by running the `main_plots.py` script:
@@ -31,9 +33,8 @@ By default, the results will be re-computed and saved each time.
 If you want to use the results saved from a previous run, you can change the variable `reload_results` to `False` in the script.
 If you want to run a test run without saving the results, you can change the variable `save_results` to `False` in the script.
 
-XXX
-It will take you about XXX mins to run this script in full.
-It will take you about XXX mins to run this script with saved results.
+It will take you about 2 hours to run this script in full.
+It will take you about 2 seconds to run this script with saved results.
 
 
 ## Reproducing Figure 3., Bi-level optimization with OPA
@@ -66,6 +67,5 @@ If you want to run a test run without saving the results, you can change the var
 
 In this case, the raw results are the same as for Figure 2., so you can use these.
 
-XXX
-It will take you about XXX mins to run this script in full.
-It will take you about XXX mins to run this script with saved results.
+It will take you about 2 hours to run this script in full.
+It will take you about 2 seconds to run this script with saved results.
