@@ -197,28 +197,19 @@ def randomized_results_for_kwargs(n_random_seed=10, **kwargs):
 
 def framed_results_for_kwargs(n_random_seed=10, **kwargs):
     overall_res = randomized_results_for_kwargs(n_random_seed=n_random_seed, **kwargs)
-    seed_columns = [
-        'i_iter',
-        'time',
-        'val_loss',
-        'test_loss',
+    data = [
+        {
+            'seed': i_seed,
+            'i_iter': i_iter,
+            'time': overall_res.lamda_times[i_seed][i_iter],
+            'val_loss': overall_res.val_losses[i_seed][i_iter],
+            'test_loss': overall_res.test_losses[i_seed][i_iter],
+            **kwargs,
+        }
+        for i_seed in range(n_random_seed)
+        for i_iter in range(len(overall_res.lamda_times[i_seed]))
     ]
-    df_res = pd.DataFrame(columns=[
-        'seed',
-        *seed_columns,
-        *kwargs.keys(),
-    ])
-    for i_seed in range(n_random_seed):
-        df_seed = pd.DataFrame(columns=seed_columns, data=np.array([
-            range(len(overall_res.lamda_times[i_seed])),
-            overall_res.lamda_times[i_seed],
-            overall_res.val_losses[i_seed],
-            overall_res.test_losses[i_seed],
-        ]).T)
-        df_seed['seed'] = i_seed
-        for k, v in kwargs.items():
-            df_seed[k] = v
-        df_res = df_res.append(df_seed)
+    df_res = pd.DataFrame(data)
     return df_res
 
 def quantized_results_for_kwargs(**kwargs):
