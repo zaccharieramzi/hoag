@@ -1,3 +1,6 @@
+import time
+start = time.time()
+
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.datasets import load_breast_cancer
@@ -156,4 +159,5 @@ ax_legend.axis('off')
 plt.savefig('lfbgs_inversion_opa_scatter.pdf', dpi=300);
 
 
-# In[ ]:
+end = time.time()
+print(f'The script took {end-start} seconds to run')
