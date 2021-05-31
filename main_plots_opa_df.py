@@ -1,3 +1,6 @@
+import time
+start = time.time()
+
 import matplotlib.pyplot as plt
 
 from hoag.benchmark import framed_results_for_kwargs
@@ -12,8 +15,8 @@ plt.rcParams['font.size'] = 8
 plt.rcParams['xtick.labelsize'] = 6
 plt.rcParams['ytick.labelsize'] = 6
 
-save_results = False
-reload_results = False
+save_results = True
+reload_results = True
 dataset = '20news'
 maxiter_inner = 1000
 max_iter = 30
@@ -104,3 +107,6 @@ ax_legend.axis('off')
 ax_legend.legend(handles, labels, loc='center', ncol=1, handlelength=1.5, handletextpad=.2)
 fig.savefig('bilevel_opa.pdf', dpi=300)
 fig.savefig(f'{results_name[:-4]}_val.pdf', dpi=300)
+
+end = time.time()
+print(f'The script took {end-start} seconds to run')
