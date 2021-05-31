@@ -49,9 +49,8 @@ By default, the results will be re-computed and saved each time.
 If you want to use the results saved from a previous run, you can use the `--no_recomp` flag.
 If you want to run a test run without saving the results, you can use the `--no_save` flag.
 
-XXX
-It will take you about XXX mins to run this script in full.
-It will take you about XXX mins to run this script with saved results.
+It will take about 1 hour to run this script in full.
+It will take about 2 seconds to run this script with saved results.
 
 ## Reproducing Figure E.1., Bi-level optimization
 
