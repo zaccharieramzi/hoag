@@ -159,6 +159,7 @@ def hoag_lbfgs(
                 tol_norm=linalg.norm,
                 maxls=maxls,
                 inverse_direction_fun=inverse_direction_fun,
+                inverse_secant_freq=maxiter-it,
                 warm_restart_lists=warm_restart_lists,
             )
             x = xs[-1]
