@@ -30,8 +30,8 @@ python main_plots.py
 ```
 
 By default, the results will be re-computed and saved each time.
-If you want to use the results saved from a previous run, you can change the variable `reload_results` to `False` in the script.
-If you want to run a test run without saving the results, you can change the variable `save_results` to `False` in the script.
+If you want to use the results saved from a previous run, you can use the `--no_recomp` flag.
+If you want to run a test run without saving the results, you can use the `--no_save` flag.
 
 It will take you about 2 hours to run this script in full.
 It will take you about 2 seconds to run this script with saved results.
@@ -46,8 +46,8 @@ python main_plots_opa_df.py
 ```
 
 By default, the results will be re-computed and saved each time.
-If you want to use the results saved from a previous run, you can change the variable `reload_results` to `False` in the script.
-If you want to run a test run without saving the results, you can change the variable `save_results` to `False` in the script.
+If you want to use the results saved from a previous run, you can use the `--no_recomp` flag.
+If you want to run a test run without saving the results, you can use the `--no_save` flag.
 
 XXX
 It will take you about XXX mins to run this script in full.
@@ -55,15 +55,15 @@ It will take you about XXX mins to run this script with saved results.
 
 ## Reproducing Figure E.1., Bi-level optimization
 
-Figure E.1. can be reproduced by running the `main_plots.py` script, after changing the `appendix_figure` variable to `True`:
+Figure E.1. can be reproduced by running the `main_plots.py` script:
 
 ```
-python main_plots.py
+python main_plots.py --appendix_figure
 ```
 
 By default, the results will be re-computed and saved each time.
-If you want to use the results saved from a previous run, you can change the variable `reload_results` to `False` in the script.
-If you want to run a test run without saving the results, you can change the variable `save_results` to `False` in the script.
+If you want to use the results saved from a previous run, you can use the `--no_recomp` flag.
+If you want to run a test run without saving the results, you can use the `--no_save` flag.
 
 In this case, the raw results are the same as for Figure 2., so you can use these.
 
