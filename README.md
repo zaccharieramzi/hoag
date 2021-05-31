@@ -19,7 +19,7 @@ Figure 1. can be reproduced by running the `lbfgs_inversion.py` script:
 python lbfgs_inversion.py
 ```
 
-It will take you about 8 seconds to run this script.
+It will take about 8 seconds to run this script.
 
 ## Reproducing Figure 2, Bi-level optimization
 
