@@ -2,6 +2,7 @@ import argparse
 import time
 
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from hoag.benchmark import framed_results_for_kwargs
 
@@ -57,6 +58,8 @@ if __name__ == '__main__':
 
     if save_results:
         big_df_res.to_csv(results_name)
+    else:
+        big_df_res = pd.read_csv(results_name)
 
 
     schemes_naming = {
