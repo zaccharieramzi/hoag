@@ -1,3 +1,6 @@
+import time
+start = time.time()
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -11,8 +14,8 @@ plt.rcParams['font.size'] = 8
 plt.rcParams['xtick.labelsize'] = 6
 plt.rcParams['ytick.labelsize'] = 6
 
-save_results = False
-reload_results = False
+save_results = True
+reload_results = True
 appendix_figure = False
 maxiter_inner = 1000
 max_iter = 30
@@ -150,3 +153,6 @@ if appendix_figure:
     fig.savefig('bilevel_test_appendix.pdf', dpi=300)
 else:
     fig.savefig('bilevel_test.pdf', dpi=300)
+
+end = time.time()
+print(f'The script took {end-start} seconds to run')
