@@ -4,6 +4,7 @@ from typing import List
 
 from libsvmdata import fetch_libsvm
 import numpy as np
+import pandas as pd
 import scipy.sparse as sp
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
@@ -193,6 +194,23 @@ def randomized_results_for_kwargs(n_random_seed=10, **kwargs):
         res = results_for_kwargs(random_state=seed, **kwargs)
         overall_res.append(res)
     return overall_res
+
+def framed_results_for_kwargs(n_random_seed=10, **kwargs):
+    overall_res = randomized_results_for_kwargs(n_random_seed=n_random_seed, **kwargs)
+    data = [
+        {
+            'seed': i_seed,
+            'i_iter': i_iter,
+            'time': overall_res.lamda_times[i_seed][i_iter],
+            'val_loss': overall_res.val_losses[i_seed][i_iter],
+            'test_loss': overall_res.test_losses[i_seed][i_iter],
+            **kwargs,
+        }
+        for i_seed in range(n_random_seed)
+        for i_iter in range(len(overall_res.lamda_times[i_seed]))
+    ]
+    df_res = pd.DataFrame(data)
+    return df_res
 
 def quantized_results_for_kwargs(**kwargs):
     overall_res = randomized_results_for_kwargs(**kwargs)
