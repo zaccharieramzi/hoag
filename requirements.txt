@@ -1,0 +1,7 @@
+libsvmdata
+scikit-learn
+keras
+tensorflow
+pandas
+SciencePlots
+matplotlib==3.4
