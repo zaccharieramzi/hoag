@@ -26,17 +26,13 @@ y[y==0] = -1
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.8, random_state=3)
 scaler = StandardScaler(with_mean=False)
 X_train = scaler.fit_transform(X_train)
-X_test = scaler.transform(X_test)
-X_val, X_test, y_val, y_test = train_test_split(X_test, y_test, test_size=0.5, random_state=3)
 
 dim = 30
 samples = 113
 n_samples = 113
 
-def f(w):
-    _, n_features = X.shape
-    grad = np.empty_like(w)
 
+def f(w):
     w, c, yz = _intercept_dot(w, X, y)
 
     # Logistic loss is the negative of the log of the logistic function.
@@ -147,16 +143,20 @@ for dir_name, dir_res in results.items():
         label=naming[dir_name],
         s=3.,
         **styles[dir_name],
-    );
+    )
 ax.set_ylim([0.994, 1.0005])
 handles, labels = ax.get_legend_handles_labels()
 ax.set_ylabel(r'$\operatorname{cossim}(a, b)$')
 ax.set_xlabel(r'$\frac{\|a \|}{\| b \|}$')
-### legend
+
+# Legend
 ax_legend = fig.add_subplot(g[0, -1])
-legend = ax_legend.legend(handles, labels, loc='center', ncol=1, handlelength=1.5, handletextpad=.2, title=r'\textbf{Direction}')
+legend = ax_legend.legend(
+    handles, labels, loc='center', ncol=1, handlelength=1.5,
+    handletextpad=.2, title=r'\textbf{Direction}'
+)
 ax_legend.axis('off')
-plt.savefig('lfbgs_inversion_opa_scatter.pdf', dpi=300);
+plt.savefig('lfbgs_inversion_opa_scatter.pdf', dpi=300)
 
 
 end = time.time()
