@@ -42,11 +42,11 @@ SCHEME_STYLES = {
 
 ZOOM_LIMS = {
     '20news': [  # for 20news
-        32,
+        60,
         600,
     ],
     'real-sim': [  # for real-sim
-        12,
+        30,
         1000,
     ]
 }
