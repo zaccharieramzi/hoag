@@ -201,7 +201,7 @@ def plot_results_OPA(big_df_res, fig=None, g=None):
         )
     ax.set_xlim(xlim)
     ax.set_xlabel('Time (s)')
-    ax.set_ylabel('Loss')
+    ax.set_ylabel('Test set loss')
     ax.legend()
     fig.savefig('bilevel_opa.pdf', dpi=300)
     fig.savefig(f'{results_name[:-4]}_val.pdf', dpi=300)

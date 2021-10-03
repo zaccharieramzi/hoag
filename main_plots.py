@@ -194,7 +194,7 @@ if __name__ == '__main__':
         ax.set_xlabel('Time (s)')
         ax.set_xlim(right=ZOOM_LIMS[dataset][0])
         if i == 0:
-            ax.set_ylabel('Loss')
+            ax.set_ylabel('Test set loss')
         ax.set_title(dataset)
         ax.set_xlim(left=0)
 
