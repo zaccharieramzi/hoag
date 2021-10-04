@@ -28,7 +28,7 @@ SCHEMES = [
 ]
 
 DIRECTION_STYLES = {
-    'Additional': dict(color='C2', marker='o'),
+    'Prescribed': dict(color='C2', marker='o'),
     'Krylov': dict(color='C1', marker='*'),
     'Random': dict(color='C0', marker='^', alpha=0.5),
 }
@@ -88,7 +88,7 @@ def evaluate_opa_inversion_quality():
         return H
 
     results = {
-        'Additional': [],
+        'Prescribed': [],
         'Krylov': [],
         'Random': [],
     }
@@ -109,7 +109,7 @@ def evaluate_opa_inversion_quality():
         )
         H = hess_f(xs[-1])
         directions = {
-            'Additional': inverse_direction,
+            'Prescribed': inverse_direction,
             # here H = F'(u*), warm_lists[0][-1] = u* - u*-1
             'Krylov': H.dot(warm_lists[0][-1]),
             'Random': rng.normal(size=(n_features,)),
