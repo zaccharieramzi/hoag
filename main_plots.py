@@ -151,7 +151,7 @@ if __name__ == '__main__':
     setup_matplotlib()
     fig = plt.figure(figsize=(5.5, 6.5 if appendix_figure else 2.5))
     if appendix_figure:
-        g = plt.GridSpec(2, 1, height_ratios=[0.4, 0.4, .15], hspace=.35)
+        g = plt.GridSpec(3, 1, height_ratios=[0.4, 0.4, .15], hspace=.45)
     else:
         g = plt.GridSpec(2, 2, height_ratios=[0.1, .9],
                          wspace=.2, hspace=.5, top=.99, right=0.98)
@@ -193,7 +193,7 @@ if __name__ == '__main__':
             labels.append(SCHEME_LABELS[scheme_label])
         ax.set_xlabel('Time (s)')
         ax.set_xlim(right=ZOOM_LIMS[dataset][0])
-        if i == 0:
+        if i == 0 and not appendix_figure:
             ax.set_ylabel('Test set loss')
         ax.set_title(dataset)
         ax.set_xlim(left=0)
@@ -204,6 +204,16 @@ if __name__ == '__main__':
             handles, labels, loc='center', ncol=4,
             handlelength=1.5, handletextpad=.2
         )
+        # Y label
+        # fig.supylabel('Test set loss')
+        ax_losses = fig.add_subplot(g[:-1], frameon=False)
+        ax_losses.axes.xaxis.set_ticks([])
+        ax_losses.axes.yaxis.set_ticks([])
+        ax_losses.spines['top'].set_visible(False)
+        ax_losses.spines['right'].set_visible(False)
+        ax_losses.spines['bottom'].set_visible(False)
+        ax_losses.spines['left'].set_visible(False)
+        ax_losses.set_ylabel('Test set loss', labelpad=28.)
     else:
         ax_legend = fig.add_subplot(g[0, :])
         legend = ax_legend.legend(
