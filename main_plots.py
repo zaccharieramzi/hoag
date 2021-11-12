@@ -1,8 +1,10 @@
 import argparse
 import time
 
-import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 from hoag.benchmark import framed_results_for_kwargs
 
@@ -70,6 +72,15 @@ if __name__ == '__main__':
                         help='No recomputation of the results.')
     parser.add_argument('--no_save', '-ns', action='store_true',
                         help='No saving of the results.')
+    parser.add_argument('--interp', action='store_true',
+                        help='Use interpolation curves.')
+    parser.add_argument('--quantile', '-q', type=int, default=10,
+                        help='Use first and last q-quantile for variance.')
+    parser.add_argument('--eps', type=float, default=10,
+                        help='Max sub-optimality level.')
+    parser.add_argument('--objective', dest='subopt', action='store_false',
+                        help='If set, plot the objective value instead of '
+                        'the sub optimality.')
     args = parser.parse_args()
 
     save_results = not args.no_save
@@ -160,7 +171,11 @@ if __name__ == '__main__':
             f'{dataset}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
         )
         big_df_res = pd.read_csv(results_name)
-        val_min_per_seed_series = big_df_res.groupby(['seed'])['val_loss'].min()
+        min_per_seed = (
+            big_df_res.groupby(['seed'])['val_loss'].min() - args.eps
+        )
+        if not args.subopt:
+            min_per_seed *= 0
         if appendix_figure:
             ax = fig.add_subplot(g[i, 0])
         else:
@@ -171,32 +186,64 @@ if __name__ == '__main__':
                 handles.append(plt.scatter([], [], alpha=0))
                 labels.append(None)
                 continue
-            df_scheme = big_df_res.query(f'scheme_label=="{scheme_label}"').copy()
-            for seed in df_scheme['seed'].unique():
-                df_scheme.loc[df_scheme['seed'] == seed, 'val_loss'] -= \
-                    val_min_per_seed_series[seed]
-            median_times = df_scheme.groupby(['i_iter'])['time'].median()
-            groupby_val_loss = df_scheme.groupby(['i_iter'])['val_loss']
-            median_val_losses = groupby_val_loss.median()
-            q1_val_losses = groupby_val_loss.quantile(0.1)
-            q9_val_losses = groupby_val_loss.quantile(0.9)
+            df_scheme = big_df_res.query(
+                f'scheme_label=="{scheme_label}"'
+            ).copy()
+            curve = pd.DataFrame(df_scheme.apply(
+                lambda x: pd.Series({
+                    'seed': x['seed'], 'time': x['time'],
+                    'i_iter': x['i_iter'],
+                    'val': x['val_loss'] - min_per_seed.loc[x['seed']]
+                }), axis=1)
+            )
+
+            q1, q3 = 1 / args.quantile, 1 - 1 / args.quantile
+            # q1, q3 = .25, .75
+            if args.interp:
+                t = np.logspace(-2, 3, 50)
+                curve_t = (
+                    curve.groupby('seed').apply(
+                        lambda x: pd.DataFrame({
+                            't': t,
+                            # Linear interpolator to resample on a grid t
+                            'v': interp1d(
+                                x['time'], x['val'],
+                                bounds_error=False,
+                                fill_value=(
+                                    x['val'].iloc[0],
+                                    x['val'].iloc[-1]
+                                )
+                            )(t)
+                        })
+                    )
+                )
+                curve_t = curve_t.groupby('t')['v'].quantile(
+                    [0.5, q1, q3]
+                ).unstack()
+            else:
+                curve_t = (
+                    curve.groupby('i_iter').quantile([0.5, q1, q3]).unstack()
+                ).set_index(('time', .5))['val']
+
             handles.extend(ax.semilogy(
-                median_times, median_val_losses,
+                curve_t.index, curve_t[0.5],
                 label=SCHEME_LABELS[scheme_label], linewidth=2,
                 **SCHEME_STYLES[scheme_label]
             ))
             ax.fill_between(
-                median_times, q1_val_losses,
-                q9_val_losses, color=handles[-1].get_color(),
+                curve_t.index, curve_t[q1],
+                curve_t[q3], color=handles[-1].get_color(),
                 alpha=.3
             )
             labels.append(SCHEME_LABELS[scheme_label])
         ax.set_xlabel('Time (s)')
         ax.set_xlim(right=ZOOM_LIMS[dataset][0])
-        if i == 0 and not appendix_figure:
-            ax.set_ylabel('Test set loss')
+        if i == 0:
+            ylabel = 'Test Loss' + (' Suboptimality' if args.subopt else '')
+            ax.set_ylabel(ylabel)
         ax.set_title(dataset)
         ax.set_xlim(left=0)
+        # ax.set_ylim(bottom=1e-2)
 
     if appendix_figure:
         ax_legend = fig.add_subplot(g[-1, 0])

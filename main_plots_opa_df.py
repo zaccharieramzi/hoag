@@ -4,6 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 from hoag.benchmark import framed_results_for_kwargs
 
@@ -162,7 +163,7 @@ def plot_eval_inversion(results, fig=None, g=None):
 def plot_results_OPA(big_df_res, fig=None, g=None):
     setup_matplotlib()
 
-    val_min_per_seed_series = big_df_res.groupby(['seed'])['val_loss'].min()
+    min_per_seed = big_df_res.groupby(['seed'])['val_loss'].min() - 1e-5
 
     if fig is None:
         fig = plt.figure(figsize=(.63 * FIG_WIDTH, FIG_HEIGHT))
@@ -174,28 +175,50 @@ def plot_results_OPA(big_df_res, fig=None, g=None):
     xlim = (1000, 0)
     for scheme_label in SCHEMES:
         # as we want to modify a column, materialize the view
-        df_scheme = big_df_res.query(f'scheme_label=="{scheme_label}"').copy()
-        for seed in df_scheme['seed'].unique():
-            df_scheme.loc[df_scheme['seed'] == seed, 'val_loss'] -= \
-                val_min_per_seed_series[seed]
-        median_times = df_scheme.groupby(['i_iter'])['time'].median()
-        groupby_val_loss = df_scheme.groupby(['i_iter'])['val_loss']
-        median_val_losses = groupby_val_loss.median()
-        q1_val_losses = groupby_val_loss.quantile(0.1)
-        q9_val_losses = groupby_val_loss.quantile(0.9)
+        df_scheme = big_df_res.query(
+            f'scheme_label=="{scheme_label}"'
+        ).copy()
+        curve = pd.DataFrame(df_scheme.apply(
+            lambda x: pd.Series({
+                'seed': x['seed'],
+                'time': x['time'],
+                'val': x['val_loss'] - min_per_seed.loc[x['seed']]}
+            ), axis=1)
+        )
+        t = np.logspace(-2, 3, 50)
+        curve_t = (
+            curve.groupby('seed').apply(
+                lambda x: pd.DataFrame({
+                    't': t,
+                    # Linear interpolator to resample on a grid t
+                    'v': interp1d(
+                        x['time'], x['val'],
+                        bounds_error=False,
+                        fill_value=(
+                            x['val'].iloc[0],
+                            x['val'].iloc[-1]
+                        )
+                    )(t)
+                }).set_index('t')
+            )
+        )
+
+        # q1, q3 = .1, .9
+        q1, q3 = .25, .75
+        curve_t = curve_t.groupby('t')['v'].quantile(
+            [0.5, q1, q3]
+        ).unstack()
         lines = ax.semilogy(
-            median_times,
-            median_val_losses,
+            curve_t.index, curve_t[0.5],
             label=SCHEME_LABELS[scheme_label],
             linewidth=2,
             **SCHEME_STYLES[scheme_label],
         )
+        median_times = df_scheme.groupby(['i_iter'])['time'].median()
         xlim = (min(xlim[0], median_times.min()),
                 max(xlim[1], median_times.max()))
         ax.fill_between(
-            median_times,
-            q1_val_losses,
-            q9_val_losses,
+            curve_t.index, curve_t[q1], curve_t[q3],
             color=lines[0].get_color(),
             alpha=.3,
         )
