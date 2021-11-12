@@ -181,33 +181,38 @@ def plot_results_OPA(big_df_res, fig=None, g=None):
         curve = pd.DataFrame(df_scheme.apply(
             lambda x: pd.Series({
                 'seed': x['seed'],
+                'i_iter': x['i_iter'],
                 'time': x['time'],
                 'val': x['val_loss'] - min_per_seed.loc[x['seed']]}
             ), axis=1)
         )
-        t = np.logspace(-2, 3, 50)
-        curve_t = (
-            curve.groupby('seed').apply(
-                lambda x: pd.DataFrame({
-                    't': t,
-                    # Linear interpolator to resample on a grid t
-                    'v': interp1d(
-                        x['time'], x['val'],
-                        bounds_error=False,
-                        fill_value=(
-                            x['val'].iloc[0],
-                            x['val'].iloc[-1]
-                        )
-                    )(t)
-                }).set_index('t')
-            )
-        )
-
-        # q1, q3 = .1, .9
         q1, q3 = .25, .75
-        curve_t = curve_t.groupby('t')['v'].quantile(
-            [0.5, q1, q3]
-        ).unstack()
+        if args.interp:
+            t = np.logspace(-2, 3, 50)
+            curve_t = (
+                curve.groupby('seed').apply(
+                    lambda x: pd.DataFrame({
+                        't': t,
+                        # Linear interpolator to resample on a grid t
+                        'v': interp1d(
+                            x['time'], x['val'],
+                            bounds_error=False,
+                            fill_value=(
+                                x['val'].iloc[0],
+                                x['val'].iloc[-1]
+                            )
+                        )(t)
+                    }).set_index('t')
+                )
+            )
+
+            curve_t = curve_t.groupby('t')['v'].quantile(
+                [0.5, q1, q3]
+            ).unstack()
+        else:
+            curve_t = (
+                curve.groupby('i_iter').quantile([0.5, q1, q3]).unstack()
+            ).set_index(('time', .5))['val']
         lines = ax.semilogy(
             curve_t.index, curve_t[0.5],
             label=SCHEME_LABELS[scheme_label],
@@ -224,7 +229,7 @@ def plot_results_OPA(big_df_res, fig=None, g=None):
         )
     ax.set_xlim(xlim)
     ax.set_xlabel('Time (s)')
-    ax.set_ylabel('Test set loss')
+    ax.set_ylabel('Test Loss Suboptimality')
     ax.legend()
     fig.savefig('bilevel_opa.pdf', dpi=300)
     fig.savefig(f'{results_name[:-4]}_val.pdf', dpi=300)
@@ -249,6 +254,8 @@ if __name__ == '__main__':
                         help='No recomputation of the results.')
     parser.add_argument('--no_save', '-ns', action='store_true',
                         help='No saving of the results.')
+    parser.add_argument('--interp', action='store_true',
+                        help='Use interpolation curves.')
     args = parser.parse_args()
 
     save_results = not args.no_save

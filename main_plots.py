@@ -238,7 +238,7 @@ if __name__ == '__main__':
             labels.append(SCHEME_LABELS[scheme_label])
         ax.set_xlabel('Time (s)')
         ax.set_xlim(right=ZOOM_LIMS[dataset][0])
-        if i == 0:
+        if i == 0 and not appendix_figure:
             ylabel = 'Test Loss' + (' Suboptimality' if args.subopt else '')
             ax.set_ylabel(ylabel)
         ax.set_title(dataset)
@@ -260,7 +260,8 @@ if __name__ == '__main__':
         ax_losses.spines['right'].set_visible(False)
         ax_losses.spines['bottom'].set_visible(False)
         ax_losses.spines['left'].set_visible(False)
-        ax_losses.set_ylabel('Test set loss', labelpad=28.)
+        ylabel = 'Test Loss' + (' Suboptimality' if args.subopt else '')
+        ax_losses.set_ylabel(ylabel, labelpad=28.)
     else:
         ax_legend = fig.add_subplot(g[0, :])
         legend = ax_legend.legend(
