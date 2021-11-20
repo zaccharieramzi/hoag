@@ -264,10 +264,7 @@ if __name__ == '__main__':
                 handlelength=2.5, handletextpad=1
             )
         ax_legend.axis('off')
-        if appendix_figure:
-            fig.savefig('bilevel_test_appendix.pdf', dpi=300)
-        else:
-            fig.savefig('bilevel_test.pdf', dpi=300)
+        fig.savefig('nls_test.pdf', dpi=300)
 
     end = time.time()
     print(f'The script took {end-start} seconds to run')
