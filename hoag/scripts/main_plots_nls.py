@@ -45,7 +45,7 @@ SCHEME_STYLES = {
 
 ZOOM_LIMS = {
     '20news': [  # for 20news
-        60,
+        80,
         600,
     ],
     'real-sim': [  # for real-sim
@@ -155,8 +155,8 @@ if __name__ == '__main__':
 
     if not args.no_draw:
         setup_matplotlib()
-        fig = plt.figure(figsize=(5.5, 6.5))
-        g = plt.GridSpec(2, 1, height_ratios=[0.8, .15], hspace=.45)
+        fig = plt.figure(figsize=(5.5, 4.5))
+        g = plt.GridSpec(2, 1, height_ratios=[0.4, .15], hspace=.45)
         for i, dataset in enumerate(DATASETS):
             results_name = (
                 f'{dataset}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
