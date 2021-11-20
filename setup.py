@@ -9,7 +9,7 @@ from setuptools import setup
 
 DISTNAME = 'hoag'
 DESCRIPTION = "XXX"
-LONG_DESCRIPTION = open('README.rst').read()
+LONG_DESCRIPTION = open('old_README.rst').read()
 MAINTAINER = 'Fabian Pedregosa'
 MAINTAINER_EMAIL = 'f@bianp.net'
 URL = 'https://github.com/fabianp/hoag'
