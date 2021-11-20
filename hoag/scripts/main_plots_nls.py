@@ -61,12 +61,12 @@ train_prop = 90/100
 schemes = {
     'warm-up': dict(max_iter=2, tol=0.1),
     'shine-big-rank': dict(
-        max_iter=max_iter, shine=True, maxcor=30,
+        max_iter=max_iter, shine=True, maxcor=10,
         exponential_decrease_factor=0.8, debug=True,
         maxiter_inner=maxiter_inner
     ),
     'fpn': dict(
-        max_iter=max_iter, fpn=True, maxcor=30,
+        max_iter=max_iter, fpn=True, maxcor=10,
         exponential_decrease_factor=0.8, debug=True,
         maxiter_inner=maxiter_inner
     ),
@@ -77,7 +77,7 @@ schemes = {
 
 def run_scheme(scheme_label):
     framed_results_for_kwargs(
-        train_prop=train_prop, dataset=dataset, n_random_seed=10,
+        train_prop=train_prop, dataset=DATASETS[0], n_random_seed=10,
         **schemes['warm-up']
     )
     df_res = framed_results_for_kwargs(
