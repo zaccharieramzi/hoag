@@ -17,7 +17,7 @@ def _create_bilevel_functions(Xt, yt, Xh, yh):
             x, Xt, yt, np.exp(alpha[0]))
 
     def h_hessian(x, alpha):
-        return _logistic_grad_hess(
+        return _nonlinear_least_squares_grad_hess(
             x, Xt, yt, np.exp(alpha[0]))[1]
 
     def g_func_grad(x, alpha):
