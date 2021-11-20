@@ -45,7 +45,7 @@ SCHEME_STYLES = {
 
 ZOOM_LIMS = {
     '20news': [  # for 20news
-        45,
+        400,
         600,
     ],
     'real-sim': [  # for real-sim
@@ -124,6 +124,8 @@ if __name__ == '__main__':
                         'the sub optimality.')
     parser.add_argument('--no_draw', '-nd', action='store_true',
                         help='Do not do the drawing.')
+    parser.add_argument('--exponential_decrease_factor', '-edf', type=float, default=0.8,
+                        help='the exponential decrease factor controlling the step size schedule.')
     args = parser.parse_args()
 
     save_results = not args.no_save
@@ -132,9 +134,7 @@ if __name__ == '__main__':
 
     for dataset in DATASETS:
 
-        results_name = (
-            f'{dataset}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
-        )
+        results_name = f'plots_nls_results_exp{args.exponential_decrease_factor}.csv'
         if reload_results:
             schemes_results = {
                 scheme_label: framed_results_for_kwargs(
@@ -162,10 +162,9 @@ if __name__ == '__main__':
         fig = plt.figure(figsize=(5.5, 4.5))
         g = plt.GridSpec(2, 1, height_ratios=[0.4, .15], hspace=.45)
         for i, dataset in enumerate(DATASETS):
-            results_name = (
-                f'{dataset}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
-            )
+            results_name = f'plots_nls_results_exp{args.exponential_decrease_factor}.csv'
             big_df_res = pd.read_csv(results_name)
+            assert list(big_df_res['nls'].unique()) == [True]
             min_per_seed = (
                 big_df_res.groupby(['seed'])['val_loss'].min() - args.eps
             )
