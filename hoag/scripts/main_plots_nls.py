@@ -45,7 +45,7 @@ SCHEME_STYLES = {
 
 ZOOM_LIMS = {
     '20news': [  # for 20news
-        80,
+        45,
         600,
     ],
     'real-sim': [  # for real-sim
@@ -76,14 +76,17 @@ schemes = {
 }
 
 
-def run_scheme(scheme_label):
+def run_scheme(scheme_label, exponential_decrease_factor=None):
+    scheme_kwargs = schemes[scheme_label]
+    if exponential_decrease_factor is not None:
+        scheme_kwargs['exponential_decrease_factor'] = exponential_decrease_factor
     framed_results_for_kwargs(
         train_prop=train_prop, dataset=DATASETS[0], n_random_seed=10,
         **schemes['warm-up']
     )
     df_res = framed_results_for_kwargs(
         train_prop=train_prop, dataset=DATASETS[0], n_random_seed=10,
-        **schemes[scheme_label],
+        **scheme_kwargs,
     )
     df_res['scheme_label'] = scheme_label
     results_name = (
