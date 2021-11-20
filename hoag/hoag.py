@@ -14,7 +14,7 @@ def hoag_lbfgs(
     maxiter=100, maxiter_inner=10000, maxiter_backward=10000,
     only_fit=False,
     iprint=-1, maxls=20, tolerance_decrease='exponential',
-    callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
+    callback=None, inner_callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
     projection=None, shine=False, debug=False, refine=False, fpn=False, grouped_reg=False,
     refine_exp=0.5, pure_python=False, opa=False, **kwargs):
     """
@@ -111,6 +111,8 @@ def hoag_lbfgs(
         start = time.time()
         if not pure_python:
             while 1:
+                if inner_callback is not None:
+                    inner_callback(x, h_func)
                 pgtol_lbfgs = 1e-120
                 factr = 1e-120  # / np.finfo(float).eps
                 _lbfgsb.setulb(
