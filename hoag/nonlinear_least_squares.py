@@ -273,7 +273,7 @@ def _nonlinear_least_squares_grad_hess(w, X, y, alpha, sample_weight=None):
 
     def Hs(s):
         ret = np.empty_like(s)
-        ret[:n_features] = dX.dot(s[:n_features])
+        ret[:n_features] = X.T.dot(dX.dot(s[:n_features]))
         ret[:n_features] += alpha * s[:n_features]
 
         # For the fit intercept case.
