@@ -19,18 +19,29 @@ def nls_loss(w, X, y, alpha):
 def hvp(f, x, v):
     return grad(lambda x: jnp.vdot(grad(f)(x), v))(x)
 
-grad_loss = jit(grad(nls_loss))
+grad_loss = jit(grad(nls_loss, argnums=0))
 
 N_SAMPLES = 100
 N_FEATURES = 100
 ALPHAS = [1e-4, 1e-2, 1, 1e2, 1e4]
 
-@pytest.mark.parametrize('alpha', ALPHAS)
-def test_loss(alpha):
+def my_setup(alpha):
     X = np.random.normal(size=(N_SAMPLES, N_FEATURES))
     y = np.random.binomial(1, 0.5, N_SAMPLES)
     w = np.random.normal(size=(N_FEATURES,))
     args = w, X, y, alpha
+    return args
+
+@pytest.mark.parametrize('alpha', ALPHAS)
+def test_loss(alpha):
+    args = my_setup(alpha)
     loss_hoag = _nonlinear_least_squares_loss(*args)
     loss_jax = nls_loss(*[jnp.array(arg) for arg in args])
     np.testing.assert_allclose(loss_hoag, loss_jax, rtol=1e-6)
+
+@pytest.mark.parametrize('alpha', ALPHAS)
+def test_grad(alpha):
+    args = my_setup(alpha)
+    _, grad_hoag = _nonlinear_least_squares_loss_and_grad(*args)
+    grad_jax = grad_loss(*[jnp.array(arg) for arg in args])
+    np.testing.assert_allclose(grad_hoag, grad_jax, rtol=1e-3)
