@@ -76,6 +76,10 @@ schemes = {
 
 
 def run_scheme(scheme_label):
+    framed_results_for_kwargs(
+        train_prop=train_prop, dataset=dataset, n_random_seed=10,
+        **schemes['warm-up']
+    )
     df_res = framed_results_for_kwargs(
         train_prop=train_prop, dataset=DATASETS[0], n_random_seed=10,
         **schemes[scheme_label],
