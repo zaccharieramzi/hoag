@@ -61,13 +61,23 @@ train_prop = 90/100
 schemes = {
     'warm-up': dict(max_iter=2, tol=0.1),
     'shine-big-rank': dict(
-        max_iter=max_iter, shine=True, maxcor=10,
-        exponential_decrease_factor=0.8, debug=True,
+        max_iter=max_iter, shine=True, maxcor=30,
+        exponential_decrease_factor=0.8, debug=False,
         maxiter_inner=maxiter_inner, nls=True,
     ),
+    'shine-big-rank-refined': dict(
+        max_iter=max_iter, shine=True, maxcor=30,
+        exponential_decrease_factor=0.8, debug=False,
+        maxiter_inner=maxiter_inner, refine=True, maxiter_backward=0
+    ),
+    'shine-big-rank-opa': dict(
+        max_iter=max_iter, shine=True, maxcor=60,
+        exponential_decrease_factor=0.8, debug=False,
+        maxiter_inner=maxiter_inner, pure_python=True, opa=True
+    ),
     'fpn': dict(
-        max_iter=max_iter, fpn=True, maxcor=10,
-        exponential_decrease_factor=0.8, debug=True,
+        max_iter=max_iter, fpn=True, maxcor=30,
+        exponential_decrease_factor=0.8, debug=False,
         maxiter_inner=maxiter_inner, nls=True,
     ),
     'original': dict(
