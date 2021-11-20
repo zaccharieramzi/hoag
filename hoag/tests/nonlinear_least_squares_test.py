@@ -16,8 +16,8 @@ def nls_loss(w, X, y, alpha):
     loss = 0.5*jnp.sum((y - sigz)**2) + 0.5*alpha*jnp.dot(w,w)
     return loss
 
-def hvp(f, x, v):
-    return grad(lambda x: jnp.vdot(grad(f)(x), v))(x)
+def hvp(f, w, X, y, alpha, v):
+    return grad(lambda x: jnp.vdot(grad(f, argnums=0)(x, X, y, alpha), v))(w)
 
 grad_loss = jit(grad(nls_loss, argnums=0))
 
@@ -45,3 +45,15 @@ def test_grad(alpha):
     _, grad_hoag = _nonlinear_least_squares_loss_and_grad(*args)
     grad_jax = grad_loss(*[jnp.array(arg) for arg in args])
     np.testing.assert_allclose(grad_hoag, grad_jax, rtol=1e-3)
+
+@pytest.mark.parametrize('alpha', ALPHAS)
+def test_hessian(alpha):
+    args = my_setup(alpha)
+    grad_hoag, hess_fun_hoag = _nonlinear_least_squares_grad_hess(*args)
+    grad_jax = grad_loss(*[jnp.array(arg) for arg in args])
+    np.testing.assert_allclose(grad_hoag, grad_jax, rtol=1e-3)
+    for _ in range(10):
+        v = np.random.normal(size=(N_FEATURES,))
+        hess_hoag = hess_fun_hoag(v)
+        hess_jax = hvp(nls_loss, *args, v=v)
+        np.testing.assert_allclose(hess_hoag, hess_jax, rtol=1e-3)
