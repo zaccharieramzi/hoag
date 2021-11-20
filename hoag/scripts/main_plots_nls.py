@@ -148,19 +148,10 @@ if __name__ == '__main__':
             if save_results:
                 big_df_res.to_csv(results_name)
 
-    if not appendix_figure:
-        included_schemes = [
-            'shine-big-rank', 'original',
-            'shine-big-rank-refined', 'fpn',
-            None, 'grid-search',
-        ]
-    else:
-        included_schemes = [
-            'original', 'truncated-inversion',
-            'shine-big-rank', 'shine-big-rank-refined',
-            'grid-search', 'random-search',
-            'fpn',
-        ]
+    included_schemes = [
+        'shine-big-rank', 'original',
+        'fpn',
+    ]
 
     if not args.no_draw:
         setup_matplotlib()
@@ -170,7 +161,7 @@ if __name__ == '__main__':
         else:
             g = plt.GridSpec(2, 2, height_ratios=[0.1, .9],
                             wspace=.2, hspace=.5, top=.99, right=0.98)
-        for i, dataset in enumerate(['20news', 'real-sim']):
+        for i, dataset in enumerate(DATASETS):
             results_name = (
                 f'{dataset}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
             )
