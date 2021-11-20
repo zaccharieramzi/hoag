@@ -45,7 +45,7 @@ SCHEME_STYLES = {
 
 ZOOM_LIMS = {
     '20news': [  # for 20news
-        400,
+        280,
         600,
     ],
     'real-sim': [  # for real-sim
@@ -63,13 +63,13 @@ schemes = {
     'shine-big-rank': dict(
         max_iter=max_iter, shine=True, maxcor=30,
         exponential_decrease_factor=0.8, debug=False,
-        maxiter_inner=maxiter_inner, nls=True,
+        maxiter_inner=maxiter_inner, nls=True, pure_python=True,
     ),
     'shine-big-rank-refined': dict(
         max_iter=max_iter, shine=True, maxcor=30,
         exponential_decrease_factor=0.8, debug=False,
         maxiter_inner=maxiter_inner, refine=True, maxiter_backward=0,
-        nls=True, refine_exp=0.8,
+        nls=True, refine_exp=0.8, pure_python=True,
     ),
     'shine-big-rank-opa': dict(
         max_iter=max_iter, shine=True, maxcor=60,
@@ -80,11 +80,12 @@ schemes = {
     'fpn': dict(
         max_iter=max_iter, fpn=True, maxcor=30,
         exponential_decrease_factor=0.8, debug=False,
-        maxiter_inner=maxiter_inner, nls=True,
+        maxiter_inner=maxiter_inner, nls=True, pure_python=True,
     ),
     'original': dict(
         max_iter=max_iter, shine=False, maxiter_inner=maxiter_inner, 
-        exponential_decrease_factor=0.8, nls=True),
+        exponential_decrease_factor=0.8, nls=True, pure_python=True,
+    ),
 }
 
 
