@@ -69,13 +69,13 @@ schemes = {
         max_iter=max_iter, shine=True, maxcor=30,
         exponential_decrease_factor=0.8, debug=False,
         maxiter_inner=maxiter_inner, refine=True, maxiter_backward=0,
-        nls=True,
+        nls=True, refine_exp=0.8,
     ),
     'shine-big-rank-opa': dict(
         max_iter=max_iter, shine=True, maxcor=60,
         exponential_decrease_factor=0.8, debug=False,
         maxiter_inner=maxiter_inner, pure_python=True, opa=True,
-        nls=True,
+        nls=True, opa_freq_coef=4,
     ),
     'fpn': dict(
         max_iter=max_iter, fpn=True, maxcor=30,
