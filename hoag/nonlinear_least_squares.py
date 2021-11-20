@@ -168,7 +168,7 @@ def _nonlinear_least_squares_loss_and_grad(w, X, y, alpha, sample_weight=None):
     if sample_weight is None:
         sample_weight = np.ones(y.shape[0])
 
-    out = np.sum(sample_weight * y_sigz**2) + .5 * alpha * np.dot(w, w)
+    out = 0.5 * np.sum(sample_weight * y_sigz**2) + .5 * alpha * np.dot(w, w)
 
     sigsig = sigz * (1-sigz)
     z0 = sample_weight * sigsig * y_sigz
@@ -205,7 +205,7 @@ def _nonlinear_least_squares_loss(w, X, y, alpha, sample_weight=None):
     if sample_weight is None:
         sample_weight = np.ones(y.shape[0])
 
-    out = np.sum(sample_weight * (y - expit(z))**2) + .5 * alpha * np.dot(w, w)
+    out = 0.5 * np.sum(sample_weight * (y - expit(z))**2) + .5 * alpha * np.dot(w, w)
     return out
 
 
