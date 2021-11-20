@@ -6,6 +6,7 @@ from libsvmdata import fetch_libsvm
 import numpy as np
 import pandas as pd
 import scipy.sparse as sp
+from scipy.special import expit
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelBinarizer
@@ -13,6 +14,7 @@ from sklearn.preprocessing import StandardScaler, LabelBinarizer
 from hoag import LogisticRegressionCV, MultiLogisticRegressionCV, NonlinearLeastSquaresCV
 from hoag.logistic import _intercept_dot, log_logistic
 from hoag.multilogistic import _multinomial_loss
+from hoag.nonlinear_least_squares import _intercept_dot as _intercept_dot_nls
 
 
 @dataclass
@@ -131,6 +133,13 @@ def val_loss_univariate(X, y, beta):
     out = -np.sum(log_logistic(yz))
     return out
 
+def val_loss_nls(X, y, beta):
+    _, _, z = _intercept_dot_nls(beta, X)
+    sigz = expit(z)
+    y_sigz = (y - sigz)
+    out = 0.5 * np.sum(y_sigz**2)
+    return out
+
 def val_loss_multivariate(X, y, beta):
     n_samples, n_classes = y.shape
     out, _, _ = _multinomial_loss(beta, X, y, np.zeros((n_classes,)), np.ones((n_samples,)))
@@ -162,9 +171,10 @@ def results_for_kwargs(train_prop=1/3, dataset='20news', random_state=0, search=
         # only 2 classes
         if nls:
             clf = NonlinearLeastSquaresCV(**kwargs)
+            val_loss = val_loss_nls
         else:
             clf = LogisticRegressionCV(**kwargs)
-        val_loss = val_loss_univariate
+            val_loss = val_loss_univariate
     else:
         # multiclasses case
         clf = MultiLogisticRegressionCV(**kwargs)
