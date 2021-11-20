@@ -90,7 +90,7 @@ def run_scheme(scheme_label, exponential_decrease_factor=None):
     )
     df_res['scheme_label'] = scheme_label
     results_name = (
-        f'{DATASETS[0]}_{scheme_label}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
+        f'{DATASETS[0]}_{scheme_label}_exp{exponential_decrease_factor}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
     )
     df_res.to_csv(results_name)
     return df_res
