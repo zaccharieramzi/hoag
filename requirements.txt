@@ -5,3 +5,4 @@ tensorflow
 pandas
 SciencePlots
 matplotlib==3.4
+joblib

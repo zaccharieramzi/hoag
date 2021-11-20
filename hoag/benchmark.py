@@ -2,6 +2,7 @@ from dataclasses import dataclass, fields, field
 import time
 from typing import List
 
+from joblib import Parallel, delayed
 from libsvmdata import fetch_libsvm
 import numpy as np
 import pandas as pd
@@ -203,9 +204,9 @@ def results_for_kwargs(train_prop=1/3, dataset='20news', random_state=0, search=
 
 def randomized_results_for_kwargs(n_random_seed=10, **kwargs):
     overall_res = BenchResult()
-    for seed in range(n_random_seed):
-        res = results_for_kwargs(random_state=seed, **kwargs)
-        overall_res.append(res)
+    overall_res = Parallel(n_jobs=-1)(
+        delayed(results_for_kwargs)(random_state=seed, **kwargs) for seed in range(n_random_seed)
+    )
     return overall_res
 
 def framed_results_for_kwargs(n_random_seed=10, nls=False, **kwargs):
