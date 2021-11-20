@@ -172,7 +172,7 @@ def _nonlinear_least_squares_loss_and_grad(w, X, y, alpha, sample_weight=None):
 
     sigsig = sigz * (1-sigz)
     z0 = sample_weight * sigsig * y_sigz
-    grad[:n_features] = safe_sparse_dot(X.T, z0) + alpha * w
+    grad[:n_features] = - safe_sparse_dot(X.T, z0) + alpha * w
 
     # Case where we fit the intercept.
     if grad.shape[0] > n_features:
@@ -251,7 +251,7 @@ def _nonlinear_least_squares_grad_hess(w, X, y, alpha, sample_weight=None):
     sigsig = sigz * (1-sigz)
     z0 = sample_weight * sigsig * y_sigz
 
-    grad[:n_features] = safe_sparse_dot(X.T, z0) + alpha * w
+    grad[:n_features] = - safe_sparse_dot(X.T, z0) + alpha * w
 
     # Case where we fit the intercept.
     if fit_intercept:
@@ -273,7 +273,7 @@ def _nonlinear_least_squares_grad_hess(w, X, y, alpha, sample_weight=None):
 
     def Hs(s):
         ret = np.empty_like(s)
-        ret[:n_features] = X.T.dot(dX.dot(s[:n_features]))
+        ret[:n_features] = - X.T.dot(dX.dot(s[:n_features]))
         ret[:n_features] += alpha * s[:n_features]
 
         # For the fit intercept case.
