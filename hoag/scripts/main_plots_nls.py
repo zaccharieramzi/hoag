@@ -68,12 +68,14 @@ schemes = {
     'shine-big-rank-refined': dict(
         max_iter=max_iter, shine=True, maxcor=30,
         exponential_decrease_factor=0.8, debug=False,
-        maxiter_inner=maxiter_inner, refine=True, maxiter_backward=0
+        maxiter_inner=maxiter_inner, refine=True, maxiter_backward=0,
+        nls=True,
     ),
     'shine-big-rank-opa': dict(
         max_iter=max_iter, shine=True, maxcor=60,
         exponential_decrease_factor=0.8, debug=False,
-        maxiter_inner=maxiter_inner, pure_python=True, opa=True
+        maxiter_inner=maxiter_inner, pure_python=True, opa=True,
+        nls=True,
     ),
     'fpn': dict(
         max_iter=max_iter, fpn=True, maxcor=30,
@@ -165,6 +167,7 @@ if __name__ == '__main__':
     included_schemes = [
         'shine-big-rank', 'original',
         'fpn',
+        'shine-big-rank-refined', 'shine-big-rank-opa',
     ]
 
     if not args.no_draw:
