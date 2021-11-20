@@ -63,15 +63,16 @@ schemes = {
     'shine-big-rank': dict(
         max_iter=max_iter, shine=True, maxcor=10,
         exponential_decrease_factor=0.8, debug=True,
-        maxiter_inner=maxiter_inner
+        maxiter_inner=maxiter_inner, nls=True,
     ),
     'fpn': dict(
         max_iter=max_iter, fpn=True, maxcor=10,
         exponential_decrease_factor=0.8, debug=True,
-        maxiter_inner=maxiter_inner
+        maxiter_inner=maxiter_inner, nls=True,
     ),
     'original': dict(
-        max_iter=max_iter, shine=False, maxiter_inner=maxiter_inner, exponential_decrease_factor=0.8),
+        max_iter=max_iter, shine=False, maxiter_inner=maxiter_inner, 
+        exponential_decrease_factor=0.8, nls=True),
 }
 
 
@@ -113,7 +114,7 @@ if __name__ == '__main__':
                         help='Use interpolation curves.')
     parser.add_argument('--quantile', '-q', type=int, default=10,
                         help='Use first and last q-quantile for variance.')
-    parser.add_argument('--eps', type=float, default=10,
+    parser.add_argument('--eps', type=float, default=1e-2,
                         help='Max sub-optimality level.')
     parser.add_argument('--objective', dest='subopt', action='store_false',
                         help='If set, plot the objective value instead of '
@@ -185,8 +186,8 @@ if __name__ == '__main__':
                     }), axis=1)
                 )
 
-                q1, q3 = 1 / args.quantile, 1 - 1 / args.quantile
-                # q1, q3 = .25, .75
+                # q1, q3 = 1 / args.quantile, 1 - 1 / args.quantile
+                q1, q3 = .25, .75
                 if args.interp:
                     t = np.logspace(-2, 3, 50)
                     curve_t = (
