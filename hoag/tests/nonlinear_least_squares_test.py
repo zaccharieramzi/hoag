@@ -56,4 +56,4 @@ def test_hessian(alpha):
         v = np.random.normal(size=(N_FEATURES,))
         hess_hoag = hess_fun_hoag(v)
         hess_jax = hvp(nls_loss, *args, v=v)
-        np.testing.assert_allclose(hess_hoag, hess_jax, rtol=1e-3)
+        np.testing.assert_allclose(hess_hoag, hess_jax, rtol=1e-2)
