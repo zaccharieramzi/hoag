@@ -155,12 +155,8 @@ if __name__ == '__main__':
 
     if not args.no_draw:
         setup_matplotlib()
-        fig = plt.figure(figsize=(5.5, 6.5 if appendix_figure else 2.5))
-        if appendix_figure:
-            g = plt.GridSpec(3, 1, height_ratios=[0.4, 0.4, .15], hspace=.45)
-        else:
-            g = plt.GridSpec(2, 2, height_ratios=[0.1, .9],
-                            wspace=.2, hspace=.5, top=.99, right=0.98)
+        fig = plt.figure(figsize=(5.5, 6.5))
+        g = plt.GridSpec(2, 1, height_ratios=[0.8, .15], hspace=.45)
         for i, dataset in enumerate(DATASETS):
             results_name = (
                 f'{dataset}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
@@ -171,10 +167,7 @@ if __name__ == '__main__':
             )
             if not args.subopt:
                 min_per_seed *= 0
-            if appendix_figure:
-                ax = fig.add_subplot(g[i, 0])
-            else:
-                ax = fig.add_subplot(g[1, i])
+            ax = fig.add_subplot(g[i, 0])
             handles, labels = [], []
             for scheme_label in included_schemes:
                 if scheme_label is None:
@@ -233,36 +226,26 @@ if __name__ == '__main__':
                 labels.append(SCHEME_LABELS[scheme_label])
             ax.set_xlabel('Time (s)')
             ax.set_xlim(right=ZOOM_LIMS[dataset][0])
-            if i == 0 and not appendix_figure:
-                ylabel = 'Test Loss' + (' Suboptimality' if args.subopt else '')
-                ax.set_ylabel(ylabel)
             ax.set_title(dataset)
             ax.set_xlim(left=0)
             # ax.set_ylim(bottom=1e-2)
 
-        if appendix_figure:
-            ax_legend = fig.add_subplot(g[-1, 0])
-            legend = ax_legend.legend(
-                handles, labels, loc='center', ncol=4,
-                handlelength=1.5, handletextpad=.2
-            )
-            # Y label
-            # fig.supylabel('Test set loss')
-            ax_losses = fig.add_subplot(g[:-1], frameon=False)
-            ax_losses.axes.xaxis.set_ticks([])
-            ax_losses.axes.yaxis.set_ticks([])
-            ax_losses.spines['top'].set_visible(False)
-            ax_losses.spines['right'].set_visible(False)
-            ax_losses.spines['bottom'].set_visible(False)
-            ax_losses.spines['left'].set_visible(False)
-            ylabel = 'Test Loss' + (' Suboptimality' if args.subopt else '')
-            ax_losses.set_ylabel(ylabel, labelpad=28.)
-        else:
-            ax_legend = fig.add_subplot(g[0, :])
-            legend = ax_legend.legend(
-                handles, labels, loc='upper center', ncol=3,
-                handlelength=2.5, handletextpad=1
-            )
+        ax_legend = fig.add_subplot(g[-1, 0])
+        legend = ax_legend.legend(
+            handles, labels, loc='center', ncol=4,
+            handlelength=1.5, handletextpad=.2
+        )
+        # Y label
+        # fig.supylabel('Test set loss')
+        ax_losses = fig.add_subplot(g[:-1], frameon=False)
+        ax_losses.axes.xaxis.set_ticks([])
+        ax_losses.axes.yaxis.set_ticks([])
+        ax_losses.spines['top'].set_visible(False)
+        ax_losses.spines['right'].set_visible(False)
+        ax_losses.spines['bottom'].set_visible(False)
+        ax_losses.spines['left'].set_visible(False)
+        ylabel = 'Test Loss' + (' Suboptimality' if args.subopt else '')
+        ax_losses.set_ylabel(ylabel, labelpad=28.)
         ax_legend.axis('off')
         fig.savefig('nls_test.pdf', dpi=300)
 
