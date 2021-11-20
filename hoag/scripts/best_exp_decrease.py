@@ -17,7 +17,7 @@ def get_alpha_for_exp_decrease(exp_decrease):
         beta_traces.append(x.copy())
     np.random.seed(0)
     clf = NonlinearLeastSquaresCV(
-        max_iter=30, 
+        max_iter=50, 
         maxiter_inner=1000, 
         shine=False, 
         fpn=False, 
