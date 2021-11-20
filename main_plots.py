@@ -94,17 +94,17 @@ if __name__ == '__main__':
         'warm-up': dict(max_iter=2, tol=0.1),
         'shine-big-rank-refined': dict(
             max_iter=max_iter, shine=True, maxcor=30,
-            exponential_decrease_factor=0.78, debug=True,
+            exponential_decrease_factor=0.78, debug=False,
             maxiter_inner=maxiter_inner, refine=True, maxiter_backward=0
         ),
         'shine-big-rank': dict(
             max_iter=max_iter, shine=True, maxcor=30,
-            exponential_decrease_factor=0.78, debug=True,
+            exponential_decrease_factor=0.78, debug=False,
             maxiter_inner=maxiter_inner
         ),
         'fpn': dict(
             max_iter=max_iter, fpn=True, maxcor=30,
-            exponential_decrease_factor=0.78, debug=True,
+            exponential_decrease_factor=0.78, debug=False,
             maxiter_inner=maxiter_inner
         ),
         'original': dict(
