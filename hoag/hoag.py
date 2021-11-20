@@ -16,7 +16,7 @@ def hoag_lbfgs(
     iprint=-1, maxls=20, tolerance_decrease='exponential',
     callback=None, inner_callback=None, verbose=0, epsilon_tol_init=1e-3, exponential_decrease_factor=0.9,
     projection=None, shine=False, debug=False, refine=False, fpn=False, grouped_reg=False,
-    refine_exp=0.5, pure_python=False, opa=False, **kwargs):
+    refine_exp=0.5, pure_python=False, opa=False, opa_freq_coef=1, **kwargs):
     """
     HOAG algorithm using L-BFGS-B in the inner optimization algorithm.
 
@@ -161,7 +161,7 @@ def hoag_lbfgs(
                 tol_norm=linalg.norm,
                 maxls=maxls,
                 inverse_direction_fun=inverse_direction_fun,
-                inverse_secant_freq=maxiter-it,
+                inverse_secant_freq=max(1, (maxiter-it)//opa_freq_coef),
                 warm_restart_lists=warm_restart_lists,
             )
             x = xs[-1]
