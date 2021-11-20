@@ -54,6 +54,38 @@ ZOOM_LIMS = {
     ]
 }
 
+maxiter_inner = 1000
+max_iter = 50
+train_prop = 90/100
+
+schemes = {
+    'warm-up': dict(max_iter=2, tol=0.1),
+    'shine-big-rank': dict(
+        max_iter=max_iter, shine=True, maxcor=30,
+        exponential_decrease_factor=0.8, debug=True,
+        maxiter_inner=maxiter_inner
+    ),
+    'fpn': dict(
+        max_iter=max_iter, fpn=True, maxcor=30,
+        exponential_decrease_factor=0.8, debug=True,
+        maxiter_inner=maxiter_inner
+    ),
+    'original': dict(
+        max_iter=max_iter, shine=False, maxiter_inner=maxiter_inner, exponential_decrease_factor=0.8),
+}
+
+
+def run_scheme(scheme_label):
+    df_res = framed_results_for_kwargs(
+        train_prop=train_prop, dataset=DATASETS[0], n_random_seed=10,
+        **schemes[scheme_label],
+    )
+    df_res['scheme_label'] = scheme_label
+    results_name = (
+        f'{dataset}_{scheme_label}_mi{maxiter_inner}_tp{train_prop:.2f}_results.csv'
+    )
+    df_res.to_csv(results_name)
+    return df_res
 
 def setup_matplotlib():
     plt.style.use(['science'])
@@ -89,25 +121,6 @@ if __name__ == '__main__':
     save_results = not args.no_save
     reload_results = not args.no_recomp
     appendix_figure = args.appendix_figure
-    maxiter_inner = 1000
-    max_iter = 50
-    train_prop = 90/100
-
-    schemes = {
-        'warm-up': dict(max_iter=2, tol=0.1),
-        'shine-big-rank': dict(
-            max_iter=max_iter, shine=True, maxcor=30,
-            exponential_decrease_factor=0.8, debug=True,
-            maxiter_inner=maxiter_inner
-        ),
-        'fpn': dict(
-            max_iter=max_iter, fpn=True, maxcor=30,
-            exponential_decrease_factor=0.8, debug=True,
-            maxiter_inner=maxiter_inner
-        ),
-        'original': dict(
-            max_iter=max_iter, shine=False, maxiter_inner=maxiter_inner, exponential_decrease_factor=0.8),
-    }
 
     for dataset in DATASETS:
 
