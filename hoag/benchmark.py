@@ -10,7 +10,7 @@ from sklearn import datasets
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, LabelBinarizer
 
-from hoag import LogisticRegressionCV, MultiLogisticRegressionCV
+from hoag import LogisticRegressionCV, MultiLogisticRegressionCV, NonlinearLeastSquaresCV
 from hoag.logistic import _intercept_dot, log_logistic
 from hoag.multilogistic import _multinomial_loss
 
@@ -136,7 +136,7 @@ def val_loss_multivariate(X, y, beta):
     out, _, _ = _multinomial_loss(beta, X, y, np.zeros((n_classes,)), np.ones((n_samples,)))
     return out
 
-def results_for_kwargs(train_prop=1/3, dataset='20news', random_state=0, search=None, **kwargs):
+def results_for_kwargs(train_prop=1/3, dataset='20news', random_state=0, search=None, nls=False, **kwargs):
     if dataset == '20news':
         get_fun = get_20_news
     elif dataset == 'real-sim':
@@ -160,7 +160,10 @@ def results_for_kwargs(train_prop=1/3, dataset='20news', random_state=0, search=
     # using HOAG
     if dataset != 'mnist':
         # only 2 classes
-        clf = LogisticRegressionCV(**kwargs)
+        if nls:
+            clf = NonlinearLeastSquaresCV(**kwargs)
+        else:
+            clf = LogisticRegressionCV(**kwargs)
         val_loss = val_loss_univariate
     else:
         # multiclasses case
@@ -195,10 +198,11 @@ def randomized_results_for_kwargs(n_random_seed=10, **kwargs):
         overall_res.append(res)
     return overall_res
 
-def framed_results_for_kwargs(n_random_seed=10, **kwargs):
-    overall_res = randomized_results_for_kwargs(n_random_seed=n_random_seed, **kwargs)
+def framed_results_for_kwargs(n_random_seed=10, nls=False, **kwargs):
+    overall_res = randomized_results_for_kwargs(n_random_seed=n_random_seed, nls=nls, **kwargs)
     data = [
         {
+            'nls': nls,
             'seed': i_seed,
             'i_iter': i_iter,
             'time': overall_res.lamda_times[i_seed][i_iter],
